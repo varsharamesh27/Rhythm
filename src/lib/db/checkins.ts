@@ -2,12 +2,7 @@ import { unstable_noStore as noStore } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { DailyCheckin, DailyCheckinInsert } from "@/types/database";
 
-export async function getCurrentUserId(): Promise<string | null> {
-  const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase.auth.getUser();
-  if (error || !data.user) return null;
-  return data.user.id;
-}
+export { getCurrentUserId } from "./auth";
 
 export async function listRecentCheckins(userId: string, limit = 30): Promise<DailyCheckin[]> {
   noStore();
