@@ -1,14 +1,23 @@
 export type HabitCategory = "routine" | "recovery" | "movement" | "nutrition" | "career";
 export type GoalStatus = "active" | "paused" | "completed";
 
-export type UserProfile = {
+type DbRecord = Record<string, unknown>;
+
+type Table<Row extends DbRecord, Insert extends DbRecord, Update extends DbRecord> = {
+  Row: Row;
+  Insert: Insert;
+  Update: Update;
+  Relationships: [];
+};
+
+export type UserProfile = DbRecord & {
   id: string;
   display_name: string | null;
   timezone: string;
   created_at: string;
 };
 
-export type Habit = {
+export type Habit = DbRecord & {
   id: string;
   user_id: string;
   name: string;
@@ -18,7 +27,7 @@ export type Habit = {
   created_at: string;
 };
 
-export type HabitLog = {
+export type HabitLog = DbRecord & {
   id: string;
   user_id: string;
   habit_id: string;
@@ -27,7 +36,7 @@ export type HabitLog = {
   created_at: string;
 };
 
-export type DailyCheckin = {
+export type DailyCheckin = DbRecord & {
   id: string;
   user_id: string;
   checkin_date: string;
@@ -50,7 +59,7 @@ export type DailyCheckin = {
   updated_at: string;
 };
 
-export type ScheduleEntry = {
+export type ScheduleEntry = DbRecord & {
   id: string;
   user_id: string;
   entry_date: string;
@@ -64,7 +73,7 @@ export type ScheduleEntry = {
   created_at: string;
 };
 
-export type Goal = {
+export type Goal = DbRecord & {
   id: string;
   user_id: string;
   title: string;
@@ -74,7 +83,7 @@ export type Goal = {
   created_at: string;
 };
 
-export type WeeklyReview = {
+export type WeeklyReview = DbRecord & {
   id: string;
   user_id: string;
   week_start: string;
@@ -90,48 +99,26 @@ export type WeeklyReview = {
 export type DailyCheckinInsert = Omit<DailyCheckin, "id" | "created_at" | "updated_at">;
 export type HabitInsert = Omit<Habit, "id" | "created_at">;
 export type HabitLogInsert = Omit<HabitLog, "id" | "created_at">;
-export type ScheduleEntryInsert = Omit<ScheduleEntry, "id" | "created_at">;
-export type GoalInsert = Omit<Goal, "id" | "created_at">;
+export type ScheduleEntryInsert = Omit<ScheduleEntry, "id" | "created_at" | "actual_start" | "actual_end" | "completed"> & Partial<Pick<ScheduleEntry, "actual_start" | "actual_end" | "completed">>;
+export type GoalInsert = Omit<Goal, "id" | "created_at" | "status"> & Partial<Pick<Goal, "status">>;
 export type WeeklyReviewInsert = Omit<WeeklyReview, "id" | "created_at">;
 
 export type Database = {
   public: {
     Tables: {
-      users: {
-        Row: UserProfile;
-        Insert: Partial<UserProfile> & Pick<UserProfile, "id">;
-        Update: Partial<UserProfile>;
-      };
-      habits: {
-        Row: Habit;
-        Insert: Partial<Habit> & Pick<Habit, "user_id" | "name" | "category" | "target_per_week">;
-        Update: Partial<Habit>;
-      };
-      habit_logs: {
-        Row: HabitLog;
-        Insert: Partial<HabitLog> & Pick<HabitLog, "user_id" | "habit_id" | "log_date">;
-        Update: Partial<HabitLog>;
-      };
-      daily_checkins: {
-        Row: DailyCheckin;
-        Insert: Partial<DailyCheckin> & Pick<DailyCheckin, "user_id" | "checkin_date">;
-        Update: Partial<DailyCheckin>;
-      };
-      schedule_entries: {
-        Row: ScheduleEntry;
-        Insert: Partial<ScheduleEntry> & Pick<ScheduleEntry, "user_id" | "entry_date" | "planned_start" | "planned_end" | "title" | "category">;
-        Update: Partial<ScheduleEntry>;
-      };
-      goals: {
-        Row: Goal;
-        Insert: Partial<Goal> & Pick<Goal, "user_id" | "title" | "category">;
-        Update: Partial<Goal>;
-      };
-      weekly_reviews: {
-        Row: WeeklyReview;
-        Insert: Partial<WeeklyReview> & Pick<WeeklyReview, "user_id" | "week_start">;
-        Update: Partial<WeeklyReview>;
-      };
+      users: Table<UserProfile, Partial<UserProfile> & Pick<UserProfile, "id">, Partial<UserProfile>>;
+      habits: Table<Habit, HabitInsert, Partial<Habit>>;
+      habit_logs: Table<HabitLog, HabitLogInsert, Partial<HabitLog>>;
+      daily_checkins: Table<DailyCheckin, DailyCheckinInsert, Partial<DailyCheckin>>;
+      schedule_entries: Table<ScheduleEntry, ScheduleEntryInsert, Partial<ScheduleEntry>>;
+      goals: Table<Goal, GoalInsert, Partial<Goal>>;
+      weekly_reviews: Table<WeeklyReview, WeeklyReviewInsert, Partial<WeeklyReview>>;
     };
+    Views: { [_ in never]: never };
+    Functions: { [_ in never]: never };
+    Enums: {
+      habit_category: HabitCategory;
+    };
+    CompositeTypes: { [_ in never]: never };
   };
 };

@@ -85,7 +85,7 @@ export default async function InsightsPage() {
               <CardHeader><CardTitle>Active goals</CardTitle></CardHeader>
               <CardContent className="grid gap-3">
                 {activeGoals.length === 0 ? <p className="text-sm text-stone-600">No active goals yet.</p> : null}
-                {activeGoals.map((goal) => <div key={goal.id} className="rounded-md bg-stone-50 p-3"><p className="font-medium text-stone-950">{goal.title}</p><p className="text-sm text-stone-600">{goal.category}{goal.target_date ? ` · ${goal.target_date}` : ""}</p></div>)}
+                {activeGoals.map((goal) => <div key={goal.id} className="rounded-md bg-stone-50 p-3"><p className="font-medium text-stone-950">{goal.title}</p><p className="text-sm text-stone-600">{goal.category}{goal.target_date ? ` Â· ${goal.target_date}` : ""}</p></div>)}
               </CardContent>
             </Card>
           </div>

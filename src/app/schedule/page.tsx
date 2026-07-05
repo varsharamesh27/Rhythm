@@ -40,7 +40,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
           <Card>
             <CardHeader>
               <CardTitle>Planned versus actual</CardTitle>
-              <p className="text-sm text-stone-600">{entries.length} blocks · {plannedTotal} planned minutes · {adherence}% completed</p>
+              <p className="text-sm text-stone-600">{entries.length} blocks Â· {plannedTotal} planned minutes Â· {adherence}% completed</p>
             </CardHeader>
             <CardContent className="grid gap-4">
               <form className="flex max-w-xs items-end gap-2">
@@ -53,7 +53,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                       <h2 className="font-semibold text-stone-950">{entry.title}</h2>
-                      <p className="text-sm text-stone-600">{entry.planned_start}-{entry.planned_end} · {entry.category} · {plannedMinutes(entry)} minutes</p>
+                      <p className="text-sm text-stone-600">{entry.planned_start}-{entry.planned_end} Â· {entry.category} Â· {plannedMinutes(entry)} minutes</p>
                     </div>
                     <span className={entry.completed ? "rounded-full bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-800" : "rounded-full bg-stone-100 px-3 py-1 text-sm font-semibold text-stone-700"}>{entry.completed ? "Completed" : "Open"}</span>
                   </div>

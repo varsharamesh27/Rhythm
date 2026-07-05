@@ -48,7 +48,7 @@ export default async function HabitsPage() {
                   <article key={habit.id} className="grid gap-3 rounded-lg border border-stone-200 p-4 sm:grid-cols-[1fr_auto] sm:items-center">
                     <div>
                       <h2 className="font-semibold text-stone-950">{habit.name}</h2>
-                      <p className="text-sm text-stone-600">{habit.category} · target {habit.target_per_week}x/week · {habit.is_active ? "active" : "paused"}</p>
+                      <p className="text-sm text-stone-600">{habit.category} Â· target {habit.target_per_week}x/week Â· {habit.is_active ? "active" : "paused"}</p>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {habit.is_active ? (

@@ -1,6 +1,11 @@
 import { cookies } from "next/headers";
-import { createServerClient } from "@supabase/ssr";
-import type { Database } from "@/types/database";
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
+
+type CookieToSet = {
+  name: string;
+  value: string;
+  options: CookieOptions;
+};
 
 export async function createSupabaseServerClient() {
   const cookieStore = await cookies();
@@ -11,12 +16,12 @@ export async function createSupabaseServerClient() {
     throw new Error("Missing Supabase environment variables. Copy .env.example to .env.local and fill in your project values.");
   }
 
-  return createServerClient<Database>(url, key, {
+  return createServerClient(url, key, {
     cookies: {
       getAll() {
         return cookieStore.getAll();
       },
-      setAll(cookiesToSet) {
+      setAll(cookiesToSet: CookieToSet[]) {
         cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
       }
     }
