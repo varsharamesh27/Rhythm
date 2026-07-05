@@ -10,3 +10,5 @@ coverage
 *.tsbuildinfo
 
 .tools
+.next-dev.*.log
+.next-dev.log
