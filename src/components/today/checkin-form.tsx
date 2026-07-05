@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { DailyCheckin } from "@/types/database";
-import { saveDailyCheckin, type CheckinActionState } from "@/app/(app)/today/actions";
+import { saveDailyCheckin, type CheckinActionState } from "@/app/today/actions";
 
 const initialState: CheckinActionState = { ok: false, message: "" };
 
