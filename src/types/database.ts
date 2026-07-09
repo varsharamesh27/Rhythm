@@ -1,7 +1,7 @@
 export type HabitCategory = "routine" | "recovery" | "movement" | "nutrition" | "career";
 export type GoalStatus = "active" | "paused" | "completed";
 
-type DbRecord = Record<string, unknown>;
+type DbRecord = object;
 
 type Table<Row extends DbRecord, Insert extends DbRecord, Update extends DbRecord> = {
   Row: Row;

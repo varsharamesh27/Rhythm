@@ -1,9 +1,13 @@
 import { unstable_noStore as noStore } from "next/cache";
+import { isDemoMode } from "@/lib/demo-mode";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { Goal, HabitCategory, WeeklyReview } from "@/types/database";
+import { createDemoGoal, listDemoGoals, listDemoWeeklyReviews, upsertDemoWeeklyReview } from "./demo-store";
 
 export async function listGoals(userId: string): Promise<Goal[]> {
   noStore();
+  if (isDemoMode()) return listDemoGoals();
+
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("goals")
@@ -16,6 +20,11 @@ export async function listGoals(userId: string): Promise<Goal[]> {
 }
 
 export async function createGoal(input: { userId: string; title: string; category: HabitCategory; targetDate: string | null }): Promise<void> {
+  if (isDemoMode()) {
+    createDemoGoal(input);
+    return;
+  }
+
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.from("goals").insert({
     user_id: input.userId,
@@ -29,6 +38,8 @@ export async function createGoal(input: { userId: string; title: string; categor
 
 export async function listWeeklyReviews(userId: string, limit = 8): Promise<WeeklyReview[]> {
   noStore();
+  if (isDemoMode()) return listDemoWeeklyReviews(limit);
+
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("weekly_reviews")
@@ -50,6 +61,19 @@ export async function upsertWeeklyReview(input: {
   careerSummary: string | null;
   nextWeekFocus: string | null;
 }): Promise<void> {
+  if (isDemoMode()) {
+    upsertDemoWeeklyReview({
+      week_start: input.weekStart,
+      routine_summary: input.routineSummary,
+      recovery_summary: input.recoverySummary,
+      movement_summary: input.movementSummary,
+      nutrition_summary: input.nutritionSummary,
+      career_summary: input.careerSummary,
+      next_week_focus: input.nextWeekFocus
+    });
+    return;
+  }
+
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.from("weekly_reviews").upsert(
     {

@@ -1,9 +1,13 @@
 import { unstable_noStore as noStore } from "next/cache";
+import { isDemoMode } from "@/lib/demo-mode";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { Habit, HabitCategory, HabitLog } from "@/types/database";
+import { createDemoHabit, listDemoHabitLogs, listDemoHabits, setDemoHabitActive, setDemoHabitLog } from "./demo-store";
 
 export async function listHabits(userId: string): Promise<Habit[]> {
   noStore();
+  if (isDemoMode()) return listDemoHabits();
+
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("habits")
@@ -17,6 +21,8 @@ export async function listHabits(userId: string): Promise<Habit[]> {
 
 export async function listHabitLogsForRange(userId: string, startDate: string, endDate: string): Promise<HabitLog[]> {
   noStore();
+  if (isDemoMode()) return listDemoHabitLogs(startDate, endDate);
+
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("habit_logs")
@@ -29,6 +35,11 @@ export async function listHabitLogsForRange(userId: string, startDate: string, e
 }
 
 export async function createHabit(input: { userId: string; name: string; category: HabitCategory; targetPerWeek: number }): Promise<void> {
+  if (isDemoMode()) {
+    createDemoHabit(input);
+    return;
+  }
+
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.from("habits").insert({
     user_id: input.userId,
@@ -41,12 +52,22 @@ export async function createHabit(input: { userId: string; name: string; categor
 }
 
 export async function setHabitActive(userId: string, habitId: string, isActive: boolean): Promise<void> {
+  if (isDemoMode()) {
+    setDemoHabitActive(habitId, isActive);
+    return;
+  }
+
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.from("habits").update({ is_active: isActive }).eq("user_id", userId).eq("id", habitId);
   if (error) throw new Error(error.message);
 }
 
 export async function setHabitLog(input: { userId: string; habitId: string; logDate: string; completed: boolean }): Promise<void> {
+  if (isDemoMode()) {
+    setDemoHabitLog(input);
+    return;
+  }
+
   const supabase = await createSupabaseServerClient();
   if (!input.completed) {
     const { error } = await supabase

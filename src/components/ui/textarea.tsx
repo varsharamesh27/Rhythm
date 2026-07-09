@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 export function Textarea({ className, ...props }: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
   return (
     <textarea
-      className={cn("min-h-24 rounded-md border border-stone-300 bg-white px-3 py-2 text-sm text-stone-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700", className)}
+      className={cn("min-h-24 rounded-md border border-rose-200 bg-white px-3 py-2 text-sm text-zinc-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600", className)}
       {...props}
     />
   );

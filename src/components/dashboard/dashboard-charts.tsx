@@ -14,7 +14,7 @@ export function DashboardCharts({ metrics }: { metrics: DashboardMetrics }) {
             <XAxis dataKey="date" tick={{ fontSize: 12 }} />
             <YAxis tick={{ fontSize: 12 }} domain={[0, 12]} />
             <Tooltip />
-            <Line type="monotone" dataKey="hours" stroke="#047857" strokeWidth={3} dot={{ r: 3 }} />
+            <Line type="monotone" dataKey="hours" stroke="#0d9488" strokeWidth={3} dot={{ r: 3 }} />
           </LineChart>
         </ResponsiveContainer>
       </ChartCard>
@@ -24,7 +24,7 @@ export function DashboardCharts({ metrics }: { metrics: DashboardMetrics }) {
             <XAxis dataKey="date" tick={{ fontSize: 12 }} />
             <YAxis tick={{ fontSize: 12 }} width={42} />
             <Tooltip />
-            <Line type="monotone" dataKey="weight" stroke="#0f5f86" strokeWidth={3} dot={{ r: 3 }} />
+            <Line type="monotone" dataKey="weight" stroke="#e11d48" strokeWidth={3} dot={{ r: 3 }} />
           </LineChart>
         </ResponsiveContainer>
       </ChartCard>
@@ -36,7 +36,7 @@ function ChartCard({ title, empty, children }: { title: string; empty: boolean; 
   return (
     <Card>
       <CardHeader><CardTitle>{title}</CardTitle></CardHeader>
-      <CardContent>{empty ? <p className="rounded-md bg-stone-50 p-4 text-sm text-stone-600">Add a few check-ins to see this trend.</p> : children}</CardContent>
+      <CardContent>{empty ? <p className="rounded-md bg-orange-50 p-4 text-sm text-zinc-600">Add a few check-ins to see this trend.</p> : children}</CardContent>
     </Card>
   );
 }

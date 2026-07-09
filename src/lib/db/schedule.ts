@@ -1,9 +1,13 @@
 import { unstable_noStore as noStore } from "next/cache";
+import { isDemoMode } from "@/lib/demo-mode";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { HabitCategory, ScheduleEntry } from "@/types/database";
+import { createDemoScheduleEntry, listDemoScheduleEntries, listRecentDemoScheduleEntries, updateDemoScheduleActual } from "./demo-store";
 
 export async function listScheduleEntries(userId: string, date: string): Promise<ScheduleEntry[]> {
   noStore();
+  if (isDemoMode()) return listDemoScheduleEntries(date);
+
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("schedule_entries")
@@ -17,6 +21,8 @@ export async function listScheduleEntries(userId: string, date: string): Promise
 
 export async function listRecentScheduleEntries(userId: string, startDate: string, endDate: string): Promise<ScheduleEntry[]> {
   noStore();
+  if (isDemoMode()) return listRecentDemoScheduleEntries(startDate, endDate);
+
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("schedule_entries")
@@ -38,6 +44,11 @@ export async function createScheduleEntry(input: {
   title: string;
   category: HabitCategory;
 }): Promise<void> {
+  if (isDemoMode()) {
+    createDemoScheduleEntry(input);
+    return;
+  }
+
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.from("schedule_entries").insert({
     user_id: input.userId,
@@ -57,6 +68,11 @@ export async function updateScheduleActual(input: {
   actualEnd: string | null;
   completed: boolean;
 }): Promise<void> {
+  if (isDemoMode()) {
+    updateDemoScheduleActual(input);
+    return;
+  }
+
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase
     .from("schedule_entries")
