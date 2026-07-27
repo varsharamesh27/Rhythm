@@ -18,7 +18,7 @@ export default async function SettingsPage() {
       <div className="grid gap-6">
         <div>
           <h1 className="text-3xl font-bold tracking-normal">Settings</h1>
-          <p className="mt-2 max-w-2xl text-zinc-600">Keep your private rhythm profile simple and portable.</p>
+          <p className="mt-2 max-w-2xl text-zinc-600 dark:text-zinc-300">Keep your private rhythm profile simple and portable.</p>
         </div>
         <Card className="max-w-xl">
           <CardHeader><CardTitle>Profile</CardTitle></CardHeader>

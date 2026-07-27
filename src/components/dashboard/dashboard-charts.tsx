@@ -36,7 +36,7 @@ function ChartCard({ title, empty, children }: { title: string; empty: boolean; 
   return (
     <Card>
       <CardHeader><CardTitle>{title}</CardTitle></CardHeader>
-      <CardContent>{empty ? <p className="rounded-md bg-orange-50 p-4 text-sm text-zinc-600">Add a few check-ins to see this trend.</p> : children}</CardContent>
+      <CardContent>{empty ? <p className="rounded-md bg-orange-50 dark:bg-zinc-800 p-4 text-sm text-zinc-600 dark:text-zinc-300">Add a few check-ins to see this trend.</p> : children}</CardContent>
     </Card>
   );
 }

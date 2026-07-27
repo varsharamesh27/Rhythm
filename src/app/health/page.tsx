@@ -21,7 +21,7 @@ export default async function HealthPage() {
       <div className="grid gap-6">
         <div>
           <h1 className="text-3xl font-bold tracking-normal">Health</h1>
-          <p className="mt-2 max-w-2xl text-zinc-600">Recovery, movement, hydration, nutrition, mood, energy, and optional weight trends. Weight is one signal, not the scoreboard.</p>
+          <p className="mt-2 max-w-2xl text-zinc-600 dark:text-zinc-300">Recovery, movement, hydration, nutrition, mood, energy, and optional weight trends. Weight is one signal, not the scoreboard.</p>
         </div>
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <MetricCard title="Latest mood" value={latest ? `${latest.mood}/5` : "--"} helper="Logged from your daily check-in." />
@@ -33,10 +33,10 @@ export default async function HealthPage() {
         <Card>
           <CardHeader><CardTitle>Recent body signals</CardTitle></CardHeader>
           <CardContent className="overflow-x-auto">
-            {checkins.length === 0 ? <p className="text-sm text-zinc-600">No health check-ins yet.</p> : (
+            {checkins.length === 0 ? <p className="text-sm text-zinc-600 dark:text-zinc-300">No health check-ins yet.</p> : (
               <table className="w-full min-w-[680px] text-left text-sm">
-                <thead className="text-zinc-600"><tr><th className="py-2">Date</th><th>Mood</th><th>Energy</th><th>Water</th><th>Workout</th><th>Walking</th><th>Study</th><th>Weight</th></tr></thead>
-                <tbody>{checkins.slice(-10).reverse().map((checkin) => <tr key={checkin.id} className="border-t border-rose-200"><td className="py-3">{checkin.checkin_date}</td><td>{checkin.mood}/5</td><td>{checkin.energy}/5</td><td>{checkin.water_intake}</td><td>{checkin.workout_completed ? "Yes" : "No"}</td><td>{checkin.walking_completed ? "Yes" : "No"}</td><td>{checkin.study_completed ? "Yes" : "No"}</td><td>{checkin.weight ?? "--"}</td></tr>)}</tbody>
+                <thead className="text-zinc-600 dark:text-zinc-300"><tr><th className="py-2">Date</th><th>Mood</th><th>Energy</th><th>Water</th><th>Workout</th><th>Walking</th><th>Study</th><th>Weight</th></tr></thead>
+                <tbody>{checkins.slice(-10).reverse().map((checkin) => <tr key={checkin.id} className="border-t border-rose-200 dark:border-zinc-700"><td className="py-3">{checkin.checkin_date}</td><td>{checkin.mood}/5</td><td>{checkin.energy}/5</td><td>{checkin.water_intake}</td><td>{checkin.workout_completed ? "Yes" : "No"}</td><td>{checkin.walking_completed ? "Yes" : "No"}</td><td>{checkin.study_completed ? "Yes" : "No"}</td><td>{checkin.weight ?? "--"}</td></tr>)}</tbody>
               </table>
             )}
           </CardContent>

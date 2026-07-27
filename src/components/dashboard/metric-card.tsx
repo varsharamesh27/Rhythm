@@ -7,10 +7,10 @@ export function MetricCard({ title, value, helper }: { title: string; value: str
 
   return (
     <Card className={`border-t-4 ${accent}`}>
-      <CardHeader className="pb-3"><CardTitle className="text-sm text-zinc-600">{title}</CardTitle></CardHeader>
+      <CardHeader className="pb-3"><CardTitle className="text-sm text-zinc-600 dark:text-zinc-300">{title}</CardTitle></CardHeader>
       <CardContent>
-        <div className="text-3xl font-bold text-zinc-950">{value}</div>
-        <p className="mt-2 text-sm text-zinc-600">{helper}</p>
+        <div className="text-3xl font-bold text-zinc-950 dark:text-zinc-50">{value}</div>
+        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">{helper}</p>
       </CardContent>
     </Card>
   );

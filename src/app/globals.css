@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 :root {
+  color-scheme: light;
   --background: 35 100% 97%;
   --foreground: 235 25% 13%;
   --card: 0 0% 100%;
@@ -16,14 +17,33 @@
   --sun: 39 96% 57%;
   --violet: 262 66% 58%;
   --destructive: 0 72% 45%;
+  --page-gradient: linear-gradient(135deg, hsl(35 100% 97%) 0%, hsl(49 100% 95%) 36%, hsl(174 64% 94%) 67%, hsl(300 73% 97%) 100%);
+}
+
+.dark {
+  color-scheme: dark;
+  --background: 235 22% 10%;
+  --foreground: 36 38% 94%;
+  --card: 235 20% 14%;
+  --border: 236 16% 28%;
+  --muted: 235 16% 18%;
+  --muted-foreground: 38 16% 72%;
+  --primary: 346 82% 62%;
+  --primary-foreground: 235 25% 9%;
+  --accent: 174 74% 46%;
+  --accent-foreground: 235 25% 9%;
+  --sun: 39 96% 62%;
+  --violet: 262 76% 70%;
+  --destructive: 0 74% 62%;
+  --page-gradient: linear-gradient(135deg, hsl(235 24% 9%) 0%, hsl(255 28% 13%) 38%, hsl(204 33% 14%) 68%, hsl(330 28% 13%) 100%);
 }
 
 * { box-sizing: border-box; }
+html { min-height: 100%; }
 body {
   margin: 0;
   min-height: 100vh;
-  background:
-    linear-gradient(135deg, hsl(35 100% 97%) 0%, hsl(49 100% 95%) 36%, hsl(174 64% 94%) 67%, hsl(300 73% 97%) 100%);
+  background: var(--page-gradient);
   color: hsl(var(--foreground));
 }
 a { color: inherit; text-decoration: none; }

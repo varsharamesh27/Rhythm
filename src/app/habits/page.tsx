@@ -34,21 +34,21 @@ export default async function HabitsPage() {
       <div className="grid gap-6">
         <div>
           <h1 className="text-3xl font-bold tracking-normal">Habits</h1>
-          <p className="mt-2 max-w-2xl text-zinc-600">Track routine, recovery, movement, nutrition, and career habits without turning one missed day into a verdict.</p>
+          <p className="mt-2 max-w-2xl text-zinc-600 dark:text-zinc-300">Track routine, recovery, movement, nutrition, and career habits without turning one missed day into a verdict.</p>
         </div>
         <section className="grid gap-4 lg:grid-cols-[1fr_360px]">
           <Card>
             <CardHeader><CardTitle>Today&apos;s habit list</CardTitle></CardHeader>
             <CardContent className="grid gap-3">
-              <p className="rounded-md bg-teal-50 p-3 text-sm font-medium text-teal-800">Seven-day target progress: {weeklyCompletion}%</p>
-              {habits.length === 0 ? <p className="text-sm text-zinc-600">Add your first habit to begin tracking.</p> : null}
+              <p className="rounded-md bg-teal-50 dark:bg-teal-950 p-3 text-sm font-medium text-teal-800 dark:text-teal-200">Seven-day target progress: {weeklyCompletion}%</p>
+              {habits.length === 0 ? <p className="text-sm text-zinc-600 dark:text-zinc-300">Add your first habit to begin tracking.</p> : null}
               {habits.map((habit) => {
                 const done = completedToday.has(habit.id);
                 return (
-                  <article key={habit.id} className="grid gap-3 rounded-lg border border-rose-200 p-4 sm:grid-cols-[1fr_auto] sm:items-center">
+                  <article key={habit.id} className="grid gap-3 rounded-lg border border-rose-200 dark:border-zinc-700 p-4 sm:grid-cols-[1fr_auto] sm:items-center">
                     <div>
-                      <h2 className="font-semibold text-zinc-950">{habit.name}</h2>
-                      <p className="text-sm text-zinc-600">{habit.category} Â· target {habit.target_per_week}x/week Â· {habit.is_active ? "active" : "paused"}</p>
+                      <h2 className="font-semibold text-zinc-950 dark:text-zinc-50">{habit.name}</h2>
+                      <p className="text-sm text-zinc-600 dark:text-zinc-300">{habit.category} - target {habit.target_per_week}x/week - {habit.is_active ? "active" : "paused"}</p>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {habit.is_active ? (

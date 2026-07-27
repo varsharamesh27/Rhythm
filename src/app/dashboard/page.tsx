@@ -34,15 +34,15 @@ export default async function DashboardPage() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-normal">Dashboard</h1>
-            <p className="mt-2 max-w-2xl text-zinc-600">Your routine, recovery, movement, nutrition, and career signals in one calm view.</p>
+            <p className="mt-2 max-w-2xl text-zinc-600 dark:text-zinc-300">Your routine, recovery, movement, nutrition, and career signals in one calm view.</p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Link className="inline-flex min-h-10 items-center justify-center rounded-md bg-amber-50 px-4 py-2 text-sm font-semibold text-zinc-900 hover:bg-amber-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600" href="/habits">Open habits</Link>
+            <Link className="inline-flex min-h-10 items-center justify-center rounded-md bg-amber-50 dark:bg-zinc-800 px-4 py-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100 hover:bg-amber-100 dark:hover:bg-zinc-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600" href="/habits">Open habits</Link>
             <Link className="inline-flex min-h-10 items-center justify-center rounded-md bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600" href="/today">Open today</Link>
           </div>
         </div>
         {checkins.length === 0 && habits.length === 0 ? (
-          <Card><CardHeader><CardTitle>Start with today</CardTitle></CardHeader><CardContent><p className="text-zinc-600">Complete a daily check-in or add a habit to begin building your rhythm.</p></CardContent></Card>
+          <Card><CardHeader><CardTitle>Start with today</CardTitle></CardHeader><CardContent><p className="text-zinc-600 dark:text-zinc-300">Complete a daily check-in or add a habit to begin building your rhythm.</p></CardContent></Card>
         ) : null}
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3" aria-label="Weekly metrics">
           <MetricCard title="Tracked habit completion" value={`${trackedHabitCompletion}%`} helper="Your custom weekly habit targets." />

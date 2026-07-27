@@ -17,9 +17,9 @@ export function CheckinForm({ today, existing }: { today: string; existing: Dail
   return (
     <Card>
       <CardHeader>
-        <p className="text-sm font-semibold uppercase tracking-wide text-teal-700">Today</p>
+        <p className="text-sm font-semibold uppercase tracking-wide text-teal-700 dark:text-teal-300">Today</p>
         <CardTitle>Daily check-in</CardTitle>
-        <p className="text-sm text-zinc-600">A calm two-minute pass through routine, recovery, movement, nutrition, and career progress.</p>
+        <p className="text-sm text-zinc-600 dark:text-zinc-300">A calm two-minute pass through routine, recovery, movement, nutrition, and career progress.</p>
       </CardHeader>
       <CardContent>
         <form action={action} className="grid gap-5" data-testid="daily-checkin-form">
@@ -39,8 +39,8 @@ export function CheckinForm({ today, existing }: { today: string; existing: Dail
             <Label>Study duration minutes<Input name="studyDurationMinutes" type="number" min="0" max="1440" defaultValue={existing?.study_duration_minutes ?? 45} /></Label>
             <Label>Optional weight<Input name="weight" type="number" step="0.1" min="1" defaultValue={existing?.weight ?? ""} /></Label>
           </div>
-          <fieldset className="grid gap-3 rounded-lg border border-rose-200 p-4">
-            <legend className="px-1 text-sm font-semibold text-zinc-800">Completed today</legend>
+          <fieldset className="grid gap-3 rounded-lg border border-rose-200 dark:border-zinc-700 p-4">
+            <legend className="px-1 text-sm font-semibold text-zinc-800 dark:text-zinc-200">Completed today</legend>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
               <Check name="workoutCompleted" label="Workout" checked={existing?.workout_completed ?? false} />
               <Check name="yogaCompleted" label="Yoga" checked={existing?.yoga_completed ?? false} />
@@ -52,7 +52,7 @@ export function CheckinForm({ today, existing }: { today: string; existing: Dail
           <Label>Notes<Textarea name="notes" defaultValue={existing?.notes ?? ""} placeholder="What helped today? What needs gentler planning tomorrow?" /></Label>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <Button type="submit" disabled={pending}>{pending ? "Saving..." : "Save check-in"}</Button>
-            {state.message ? <p className={state.ok ? "text-sm text-teal-700" : "text-sm text-red-700"}>{state.message}</p> : null}
+            {state.message ? <p className={state.ok ? "text-sm text-teal-700 dark:text-teal-300" : "text-sm text-red-700"}>{state.message}</p> : null}
           </div>
         </form>
       </CardContent>
@@ -66,7 +66,7 @@ function Rating({ name, label, value }: { name: string; label: string; value: nu
 
 function Check({ name, label, checked }: { name: string; label: string; checked: boolean }) {
   return (
-    <label className="flex min-h-11 items-center gap-3 rounded-md bg-orange-50 px-3 py-2 text-sm font-medium text-zinc-800">
+    <label className="flex min-h-11 items-center gap-3 rounded-md bg-orange-50 dark:bg-zinc-800 px-3 py-2 text-sm font-medium text-zinc-800 dark:text-zinc-200">
       <input name={name} type="checkbox" defaultChecked={checked} className="size-4 accent-rose-600" />
       {label}
     </label>
