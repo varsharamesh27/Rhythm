@@ -1,7 +1,8 @@
 import type { ComponentType, ReactNode } from "react";
 import Link from "next/link";
-import { Activity, CalendarDays, ChartNoAxesColumnIncreasing, HeartPulse, Home, ListChecks, Settings, Sparkles } from "lucide-react";
+import { Activity, CalendarDays, ChartNoAxesColumnIncreasing, HeartPulse, Home, ListChecks, LogOut, Settings, Sparkles } from "lucide-react";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { signOutAction } from "@/app/auth/sign-out";
 import { isDemoMode } from "@/lib/demo-mode";
 import { cn } from "@/lib/utils";
 
@@ -29,14 +30,28 @@ export function AppShell({ children }: { children: ReactNode }) {
           {navItems.map((item) => <NavLink key={item.href} {...item} />)}
         </nav>
         <div className="absolute bottom-5 left-4 right-4">
-          <ThemeToggle />
+          <div className="grid gap-3">
+            <ThemeToggle />
+            <form action={signOutAction}>
+              <button className="flex min-h-10 w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-semibold text-zinc-700 hover:bg-rose-50 hover:text-rose-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600 dark:text-zinc-200 dark:hover:bg-zinc-800 dark:hover:text-teal-200 dark:focus-visible:outline-teal-400" type="submit">
+                <LogOut size={18} />{demoMode ? "Exit demo" : "Sign out"}
+              </button>
+            </form>
+          </div>
         </div>
       </aside>
       <div className="lg:pl-64">
         <header className="sticky top-0 z-10 border-b border-rose-200/80 bg-white/90 px-4 py-3 shadow-sm backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/90 lg:hidden">
           <div className="flex items-center justify-between gap-3">
             <Link href="/dashboard" className="font-bold">rhythm</Link>
-            <ThemeToggle compact />
+            <div className="flex items-center gap-2">
+              <ThemeToggle compact />
+              <form action={signOutAction}>
+                <button aria-label={demoMode ? "Exit demo" : "Sign out"} className="grid size-10 place-items-center rounded-md bg-white text-zinc-800 shadow-sm ring-1 ring-rose-100 hover:bg-rose-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-rose-600 dark:bg-zinc-900 dark:text-zinc-100 dark:ring-zinc-700 dark:hover:bg-zinc-800 dark:focus-visible:outline-teal-400" title={demoMode ? "Exit demo" : "Sign out"} type="submit">
+                  <LogOut size={18} />
+                </button>
+              </form>
+            </div>
           </div>
           <nav className="mt-3 flex gap-2 overflow-x-auto pb-1" aria-label="Mobile navigation">
             {navItems.map((item) => <Link className="rounded-md bg-white px-3 py-2 text-sm font-semibold text-zinc-800 shadow-sm ring-1 ring-rose-100 hover:bg-rose-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-rose-600 dark:bg-zinc-900 dark:text-zinc-100 dark:ring-zinc-700 dark:hover:bg-zinc-800 dark:focus-visible:outline-teal-400" href={item.href} key={item.href}>{item.label}</Link>)}

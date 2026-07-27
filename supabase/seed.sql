@@ -1,5 +1,6 @@
 -- Run after creating/signing in at least one Supabase auth user.
 -- The seed attaches fictional records to the first public user in the project.
+-- Use only in a disposable demo project, never in the personal production account.
 do $$
 declare
   demo_user uuid;

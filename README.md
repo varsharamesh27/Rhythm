@@ -37,6 +37,7 @@ Open `http://127.0.0.1:3000`.
 NEXT_PUBLIC_SUPABASE_URL=your Supabase project URL
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your Supabase anon key
 NEXT_PUBLIC_SITE_URL=http://127.0.0.1:3000
+RHYTHM_OWNER_EMAIL=the only email allowed to sign in
 ```
 
 ## Database setup
@@ -53,7 +54,7 @@ Every user-owned table has RLS policies using `auth.uid()`, so users can manage 
 
 ## Seed data
 
-After signing in once, run `supabase/migrations/002_seed_demo_data.sql` to create thirty fictional daily check-ins for the first profile user.
+Local demo mode creates fictional records automatically. For a disposable Supabase project, you can run `supabase/seed.sql` manually after signing in once. Do not run the seed against the account you will use for personal tracking.
 
 ## Testing
 
@@ -76,4 +77,49 @@ The Playwright test requires an authenticated Supabase browser state. Save it as
 
 ## Deployment
 
-Deploy to Vercel, add the same Supabase environment variables, and configure Supabase auth redirect URLs to include your deployed `/auth/callback` URL.
+The recommended long-term setup is Vercel for the Next.js app and Supabase for authentication and private PostgreSQL storage.
+
+1. Create a Supabase project and keep its database password in a password manager.
+2. Open the Supabase SQL editor and run `supabase/migrations/001_initial_schema.sql`.
+3. In Supabase project settings, copy the project URL and publishable/anon key.
+4. Import this GitHub repository into Vercel.
+5. Add these Vercel environment variables for Production, Preview, and Development:
+
+```text
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your publishable or anon key
+NEXT_PUBLIC_SITE_URL=https://your-rhythm-domain.vercel.app
+RHYTHM_OWNER_EMAIL=your-email@example.com
+```
+
+6. In Supabase Authentication URL Configuration, set:
+
+```text
+Site URL: https://your-rhythm-domain.vercel.app
+Redirect URL: https://your-rhythm-domain.vercel.app/auth/callback
+```
+
+7. Deploy, open the deployed login page, and send the first magic link to the exact `RHYTHM_OWNER_EMAIL`.
+8. After the owner account exists, disable new-user sign-ups in Supabase Authentication settings. Existing-user magic links will continue to work.
+
+The owner email check in the app and Supabase row-level security provide separate protections. The anon key is designed to be public; never place a Supabase service-role key in this app or in a `NEXT_PUBLIC_` variable.
+
+## Moving from demo mode
+
+Demo data lives only in `.demo-data.json` on the local computer. It is intentionally not uploaded automatically because it includes fictional seed records and may contain personal entries. Start the production account with a clean history, then enter the current day through the Today page.
+
+Once real Supabase variables are present, demo mode turns off automatically:
+
+- Login uses a magic link sent to the owner email.
+- Check-ins, habits, schedules, goals, reviews, and settings are stored in Supabase.
+- Refreshing, restarting, or changing devices does not remove cloud records.
+- RLS restricts every query to the authenticated user's records.
+
+## Production checklist
+
+Before using rhythm as the primary tracker:
+
+```powershell
+npm run lint
+npm run typecheck
+npm test
