@@ -1,4 +1,4 @@
-﻿import { existsSync, readFileSync, writeFileSync } from "fs";
+import { existsSync, readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 import { addDaysIso, todayIso } from "@/lib/dates";
 import { DEMO_USER_ID } from "@/lib/demo-mode";
@@ -288,5 +288,3 @@ function byDate<T extends Record<K, string>, K extends keyof T>(key: K): (a: T, 
 function newId(): string {
   return crypto.randomUUID();
 }
-
-

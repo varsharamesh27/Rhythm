@@ -46,7 +46,7 @@ export function CheckinForm({ today, existing }: { today: string; existing: Dail
               <Check name="yogaCompleted" label="Yoga" checked={existing?.yoga_completed ?? false} />
               <Check name="meditationCompleted" label="Meditation" checked={existing?.meditation_completed ?? false} />
               <Check name="walkingCompleted" label="Walking" checked={existing?.walking_completed ?? false} />
-              <Check name="studyCompleted" label="Study" checked={existing?.study_completed ?? false} />
+              <Check name="studyCompleted" label="Study session" checked={existing?.study_completed ?? false} />
             </div>
           </fieldset>
           <Label>Notes<Textarea name="notes" defaultValue={existing?.notes ?? ""} placeholder="What helped today? What needs gentler planning tomorrow?" /></Label>

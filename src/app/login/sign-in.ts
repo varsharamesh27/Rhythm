@@ -18,3 +18,8 @@ export async function signInWithEmail(formData: FormData) {
   if (error) redirect(`/login?message=${encodeURIComponent(error.message)}`);
   redirect("/login?message=Check your email for a secure sign-in link.");
 }
+
+export async function enterDemoWorkspace() {
+  if (!isDemoMode()) redirect("/login?message=Demo mode is available when Supabase environment variables are placeholders or missing.");
+  redirect("/dashboard?message=demo-mode");
+}

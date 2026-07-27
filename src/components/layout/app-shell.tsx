@@ -1,6 +1,7 @@
 import type { ComponentType, ReactNode } from "react";
 import Link from "next/link";
 import { Activity, CalendarDays, ChartNoAxesColumnIncreasing, HeartPulse, Home, ListChecks, Settings, Sparkles } from "lucide-react";
+import { isDemoMode } from "@/lib/demo-mode";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -14,6 +15,8 @@ const navItems = [
 ];
 
 export function AppShell({ children }: { children: ReactNode }) {
+  const demoMode = isDemoMode();
+
   return (
     <div className="min-h-screen text-zinc-950">
       <aside className="fixed inset-y-0 left-0 hidden w-64 border-r border-rose-200/80 bg-white/90 px-4 py-5 shadow-sm backdrop-blur lg:block">
@@ -35,9 +38,26 @@ export function AppShell({ children }: { children: ReactNode }) {
             {navItems.map((item) => <Link className="rounded-md bg-white px-3 py-2 text-sm font-semibold text-zinc-800 shadow-sm ring-1 ring-rose-100 hover:bg-rose-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-rose-600" href={item.href} key={item.href}>{item.label}</Link>)}
           </nav>
         </header>
-        <main className="mx-auto w-full max-w-6xl px-4 py-6 lg:px-8">{children}</main>
+        <main className="mx-auto w-full max-w-6xl px-4 py-6 lg:px-8">
+          {demoMode ? <DemoBanner /> : null}
+          {children}
+        </main>
       </div>
     </div>
+  );
+}
+
+function DemoBanner() {
+  return (
+    <section className="mb-6 rounded-lg border border-teal-200 bg-white/85 p-4 shadow-sm" aria-label="Demo workspace guidance">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-wide text-teal-700">Demo workspace</p>
+          <p className="mt-1 text-sm text-zinc-600">Seed data is loaded locally. Add or edit today&apos;s check-in to see your new information reflected across the dashboard.</p>
+        </div>
+        <Link className="inline-flex min-h-10 items-center justify-center rounded-md bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600" href="/today">Add today&apos;s info</Link>
+      </div>
+    </section>
   );
 }
 
