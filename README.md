@@ -81,6 +81,8 @@ The Playwright test requires an authenticated Supabase browser state. Save it as
 
 The recommended long-term setup is Vercel for the Next.js app and Supabase for authentication and private PostgreSQL storage.
 
+The repository also includes an OpenNext Cloudflare build for Codex Sites. On Windows, `npm run build` performs the normal Next.js validation build. On the Linux deployment host it additionally creates a server-capable `dist` artifact from `.open-next`.
+
 1. Create a Supabase project and keep its database password in a password manager.
 2. Open the Supabase SQL editor and run `supabase/migrations/001_initial_schema.sql`, followed by `supabase/migrations/002_weekly_menu.sql`.
 3. In Supabase project settings, copy the project URL and publishable/anon key.
