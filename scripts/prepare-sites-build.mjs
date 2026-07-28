@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { cp, mkdir, rm } from "node:fs/promises";
+import { cp, mkdir, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 if (process.platform === "win32") {
@@ -19,5 +19,11 @@ if (result.status !== 0) process.exit(result.status ?? 1);
 
 await rm("dist", { force: true, recursive: true });
 await cp(".open-next", "dist", { recursive: true });
+await mkdir("dist/server", { recursive: true });
+await writeFile(
+  "dist/server/index.js",
+  'export { default } from "../worker.js";\nexport * from "../worker.js";\n',
+  "utf8"
+);
 await mkdir("dist/.openai", { recursive: true });
 await cp(".openai/hosting.json", "dist/.openai/hosting.json");
