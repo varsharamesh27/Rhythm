@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { cp, mkdir, rm, writeFile } from "node:fs/promises";
+import { cp, mkdir, rename, rm } from "node:fs/promises";
 import { join } from "node:path";
 
 if (process.platform === "win32") {
@@ -8,23 +8,40 @@ if (process.platform === "win32") {
 }
 
 const cli = join(process.cwd(), "node_modules", ".bin", "opennextjs-cloudflare");
-const result = spawnSync(cli, ["build", "--skipNextBuild"], {
+const openNextResult = spawnSync(cli, ["build", "--skipNextBuild"], {
   cwd: process.cwd(),
   env: process.env,
   stdio: "inherit"
 });
 
-if (result.error) throw result.error;
-if (result.status !== 0) process.exit(result.status ?? 1);
+if (openNextResult.error) throw openNextResult.error;
+if (openNextResult.status !== 0) process.exit(openNextResult.status ?? 1);
 
 await rm("dist", { force: true, recursive: true });
 await mkdir("dist/server", { recursive: true });
-await cp(".open-next", "dist/server/open-next", { recursive: true });
-await cp(".open-next/assets", "dist/assets", { recursive: true });
-await writeFile(
-  "dist/server/index.js",
-  'export { default } from "./open-next/worker.js";\nexport * from "./open-next/worker.js";\n',
-  "utf8"
+
+const wranglerCli = join(process.cwd(), "node_modules", ".bin", "wrangler");
+const bundleResult = spawnSync(
+  wranglerCli,
+  [
+    "deploy",
+    "--dry-run",
+    "--outdir",
+    "dist/server",
+    "--config",
+    "wrangler.jsonc"
+  ],
+  {
+    cwd: process.cwd(),
+    env: process.env,
+    stdio: "inherit"
+  }
 );
+
+if (bundleResult.error) throw bundleResult.error;
+if (bundleResult.status !== 0) process.exit(bundleResult.status ?? 1);
+
+await rename("dist/server/worker.js", "dist/server/index.js");
+await cp(".open-next/assets", "dist/assets", { recursive: true });
 await mkdir("dist/.openai", { recursive: true });
 await cp(".openai/hosting.json", "dist/.openai/hosting.json");

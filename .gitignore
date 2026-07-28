@@ -3,6 +3,8 @@ node_modules
 out
 dist
 .open-next
+.sites-bundle
+.wrangler
 .env
 .env.local
 playwright-report
