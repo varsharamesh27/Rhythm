@@ -18,11 +18,12 @@ if (result.error) throw result.error;
 if (result.status !== 0) process.exit(result.status ?? 1);
 
 await rm("dist", { force: true, recursive: true });
-await cp(".open-next", "dist", { recursive: true });
 await mkdir("dist/server", { recursive: true });
+await cp(".open-next", "dist/server/open-next", { recursive: true });
+await cp(".open-next/assets", "dist/assets", { recursive: true });
 await writeFile(
   "dist/server/index.js",
-  'export { default } from "../worker.js";\nexport * from "../worker.js";\n',
+  'export { default } from "./open-next/worker.js";\nexport * from "./open-next/worker.js";\n',
   "utf8"
 );
 await mkdir("dist/.openai", { recursive: true });
