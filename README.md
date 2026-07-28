@@ -1,6 +1,6 @@
 # rhythm
 
-rhythm is a private habit, health, and schedule-tracking web app for one person. It tracks routine consistency, sleep, workouts, yoga, meditation, walking, hydration, nutrition consistency, weight trends, mood, energy, study sessions, goals, weekly reviews, and planned-versus-actual schedule adherence.
+rhythm is a private habit, health, meal, and schedule-tracking web app for one person. It tracks routine consistency, sleep, workouts, yoga, meditation, walking, hydration, nutrition consistency, planned and actual calories, weight trends, mood, energy, study sessions, goals, weekly reviews, and planned-versus-actual schedule adherence.
 
 No AI model is integrated yet. Current insights are deterministic summaries from your own logs.
 
@@ -12,6 +12,8 @@ No AI model is integrated yet. Current insights are deterministic summaries from
 - Dashboard reading check-ins, custom habits, and schedule entries
 - Habits page to create habits, mark today complete, and pause habits
 - Schedule page to create planned blocks and save actual completion
+- Personal routine preset that adds the daily routine without duplicating existing blocks
+- Weekly Menu for Monday-through-Sunday meal planning and planned-versus-actual calories
 - Health page with recent body signals and Recharts trends
 - Insights page with non-AI summaries, goals, and weekly reviews
 - Settings page backed by the `users` profile table
@@ -48,13 +50,13 @@ Apply migrations in Supabase SQL editor or with the Supabase CLI:
 supabase db push
 ```
 
-The main migration creates `users`, `habits`, `habit_logs`, `daily_checkins`, `sleep_logs`, `health_metrics`, `workout_logs`, `schedule_templates`, `schedule_entries`, `goals`, and `weekly_reviews`.
+Run migrations in filename order. `001_initial_schema.sql` creates the profile, habit, check-in, health, schedule, goal, and review tables. `002_weekly_menu.sql` adds `weekly_menu_items` and its meal-slot enum.
 
 Every user-owned table has RLS policies using `auth.uid()`, so users can manage only their own records. A trigger creates a `public.users` profile when a Supabase auth user is created.
 
 ## Seed data
 
-Local demo mode creates fictional records automatically. For a disposable Supabase project, you can run `supabase/seed.sql` manually after signing in once. Do not run the seed against the account you will use for personal tracking.
+Local demo mode now starts empty so personal tracking begins with a clean history. For a disposable Supabase project, you can run `supabase/seed.sql` manually after signing in once. Do not run the seed against the account you will use for personal tracking.
 
 ## Testing
 
@@ -80,7 +82,7 @@ The Playwright test requires an authenticated Supabase browser state. Save it as
 The recommended long-term setup is Vercel for the Next.js app and Supabase for authentication and private PostgreSQL storage.
 
 1. Create a Supabase project and keep its database password in a password manager.
-2. Open the Supabase SQL editor and run `supabase/migrations/001_initial_schema.sql`.
+2. Open the Supabase SQL editor and run `supabase/migrations/001_initial_schema.sql`, followed by `supabase/migrations/002_weekly_menu.sql`.
 3. In Supabase project settings, copy the project URL and publishable/anon key.
 4. Import this GitHub repository into Vercel.
 5. Add these Vercel environment variables for Production, Preview, and Development:
@@ -106,7 +108,7 @@ The owner email check in the app and Supabase row-level security provide separat
 
 ## Moving from demo mode
 
-Demo data lives only in `.demo-data.json` on the local computer. It is intentionally not uploaded automatically because it includes fictional seed records and may contain personal entries. Start the production account with a clean history, then enter the current day through the Today page.
+Demo data lives only in `.demo-data.json` on the local computer. It is intentionally not uploaded automatically because it may contain personal entries. Start the production account with a clean history, then enter the current day through the Today page.
 
 Once real Supabase variables are present, demo mode turns off automatically:
 

@@ -4,11 +4,13 @@ import { DashboardCharts } from "@/components/dashboard/dashboard-charts";
 import { MetricCard } from "@/components/dashboard/metric-card";
 import { AppShell } from "@/components/layout/app-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { addDaysIso, todayIso } from "@/lib/dates";
+import { addDaysIso, mondayWeekStartIso, todayIso } from "@/lib/dates";
 import { getCurrentUserId } from "@/lib/db/auth";
 import { listRecentCheckins } from "@/lib/db/checkins";
 import { listHabitLogsForRange, listHabits } from "@/lib/db/habits";
 import { listRecentScheduleEntries } from "@/lib/db/schedule";
+import { listWeeklyMenuItems } from "@/lib/db/weekly-menu";
+import { summarizeWeeklyCalories } from "@/lib/metrics/calories";
 import { aggregateDashboardMetrics } from "@/lib/metrics/checkins";
 import { habitCompletionForWeek } from "@/lib/metrics/habits";
 import { calculateScheduleAdherence } from "@/lib/metrics/schedule";
@@ -18,15 +20,19 @@ export default async function DashboardPage() {
   if (!userId) redirect("/login");
   const today = todayIso();
   const weekStart = addDaysIso(today, -6);
-  const [checkins, habits, habitLogs, scheduleEntries] = await Promise.all([
+  const menuWeekStart = mondayWeekStartIso(today);
+  const menuWeekEnd = addDaysIso(menuWeekStart, 6);
+  const [checkins, habits, habitLogs, scheduleEntries, weeklyMenuItems] = await Promise.all([
     listRecentCheckins(userId, 30),
     listHabits(userId),
     listHabitLogsForRange(userId, weekStart, today),
-    listRecentScheduleEntries(userId, weekStart, today)
+    listRecentScheduleEntries(userId, weekStart, today),
+    listWeeklyMenuItems(userId, menuWeekStart, menuWeekEnd)
   ]);
   const metrics = aggregateDashboardMetrics(checkins);
   const trackedHabitCompletion = habitCompletionForWeek(habits, habitLogs);
   const scheduleAdherence = calculateScheduleAdherence(scheduleEntries);
+  const calorieSummary = summarizeWeeklyCalories(weeklyMenuItems);
 
   return (
     <AppShell>
@@ -51,6 +57,11 @@ export default async function DashboardPage() {
           <MetricCard title="Weekly workout count" value={`${metrics.weeklyWorkoutCount}`} helper="Movement tracked separately from weight." />
           <MetricCard title="Study sessions" value={`${metrics.studySessionCount}`} helper="Career progress through consistent sessions." />
           <MetricCard title="Hydration consistency" value={`${metrics.hydrationConsistency}%`} helper="Days with at least eight cups logged." />
+          <MetricCard
+            title="Calories recorded"
+            value={calorieSummary.recordedMeals > 0 ? `${calorieSummary.actualCalories.toLocaleString()} kcal` : "Not logged"}
+            helper={`${calorieSummary.plannedCalories.toLocaleString()} kcal planned this week.`}
+          />
         </section>
         <DashboardCharts metrics={metrics} />
       </div>

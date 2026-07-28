@@ -1,8 +1,20 @@
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import { join } from "path";
-import { addDaysIso, todayIso } from "@/lib/dates";
 import { DEMO_USER_ID } from "@/lib/demo-mode";
-import type { DailyCheckin, DailyCheckinInsert, Goal, Habit, HabitCategory, HabitLog, ScheduleEntry, UserProfile, WeeklyReview } from "@/types/database";
+import type { RoutineBlock } from "@/lib/routine-preset";
+import type {
+  DailyCheckin,
+  DailyCheckinInsert,
+  Goal,
+  Habit,
+  HabitCategory,
+  HabitLog,
+  ScheduleEntry,
+  UserProfile,
+  WeeklyMenuItem,
+  WeeklyMenuItemInsert,
+  WeeklyReview
+} from "@/types/database";
 
 type DemoState = {
   profile: UserProfile;
@@ -10,6 +22,7 @@ type DemoState = {
   habitLogs: HabitLog[];
   checkins: DailyCheckin[];
   scheduleEntries: ScheduleEntry[];
+  weeklyMenuItems: WeeklyMenuItem[];
   goals: Goal[];
   weeklyReviews: WeeklyReview[];
 };
@@ -22,7 +35,8 @@ export function readDemoState(): DemoState {
     writeDemoState(seeded);
     return seeded;
   }
-  return JSON.parse(readFileSync(STORE_PATH, "utf8")) as DemoState;
+  const state = JSON.parse(readFileSync(STORE_PATH, "utf8")) as DemoState;
+  return { ...state, weeklyMenuItems: state.weeklyMenuItems ?? [] };
 }
 
 export function writeDemoState(state: DemoState): void {
@@ -146,6 +160,62 @@ export function updateDemoScheduleActual(input: { entryId: string; actualStart: 
   writeDemoState(state);
 }
 
+export function addDemoRoutineEntries(date: string, blocks: ReadonlyArray<RoutineBlock>): void {
+  const state = readDemoState();
+  const existing = new Set(
+    state.scheduleEntries
+      .filter((entry) => entry.entry_date === date)
+      .map((entry) => `${entry.planned_start}:${entry.title}`)
+  );
+
+  for (const block of blocks) {
+    const key = `${block.plannedStart}:${block.title}`;
+    if (existing.has(key)) continue;
+    state.scheduleEntries.push({
+      id: newId(),
+      user_id: DEMO_USER_ID,
+      entry_date: date,
+      planned_start: block.plannedStart,
+      planned_end: block.plannedEnd,
+      actual_start: null,
+      actual_end: null,
+      title: block.title,
+      category: block.category,
+      completed: false,
+      created_at: new Date().toISOString()
+    });
+  }
+  writeDemoState(state);
+}
+
+export function listDemoWeeklyMenuItems(startDate: string, endDate: string): WeeklyMenuItem[] {
+  return readDemoState()
+    .weeklyMenuItems
+    .filter((item) => item.meal_date >= startDate && item.meal_date <= endDate)
+    .sort((a, b) => a.meal_date.localeCompare(b.meal_date) || a.meal_slot.localeCompare(b.meal_slot));
+}
+
+export function upsertDemoWeeklyMenuItems(items: WeeklyMenuItemInsert[]): void {
+  const state = readDemoState();
+  const now = new Date().toISOString();
+
+  for (const input of items) {
+    const index = state.weeklyMenuItems.findIndex(
+      (item) => item.meal_date === input.meal_date && item.meal_slot === input.meal_slot
+    );
+    const existing = index >= 0 ? state.weeklyMenuItems[index] : null;
+    const row: WeeklyMenuItem = {
+      id: existing?.id ?? newId(),
+      ...input,
+      created_at: existing?.created_at ?? now,
+      updated_at: now
+    };
+    if (index >= 0) state.weeklyMenuItems[index] = row;
+    else state.weeklyMenuItems.push(row);
+  }
+  writeDemoState(state);
+}
+
 export function getDemoProfile(): UserProfile {
   return readDemoState().profile;
 }
@@ -199,85 +269,15 @@ export function upsertDemoWeeklyReview(input: Omit<WeeklyReview, "id" | "created
 }
 
 function createSeedState(): DemoState {
-  const today = todayIso();
-  const habits: Habit[] = [
-    habit("habit-routine", "Morning planning", "routine", 5, -28),
-    habit("habit-recovery", "Sleep wind-down", "recovery", 5, -27),
-    habit("habit-movement", "Walk or workout", "movement", 4, -26),
-    habit("habit-nutrition", "Hydration target", "nutrition", 7, -25),
-    habit("habit-career", "Study session", "career", 5, -24)
-  ];
-  const checkins = Array.from({ length: 30 }, (_, index) => checkin(addDaysIso(today, index - 29), index));
-  const habitLogs = habits.flatMap((habitItem, habitIndex) =>
-    checkins
-      .filter((_, index) => (index + habitIndex) % 3 !== 0)
-      .map((checkinItem) => ({
-        id: newId(),
-        user_id: DEMO_USER_ID,
-        habit_id: habitItem.id,
-        log_date: checkinItem.checkin_date,
-        completed: true,
-        created_at: checkinItem.created_at
-      }))
-  );
   return {
     profile: { id: DEMO_USER_ID, display_name: "Varsh", timezone: "America/New_York", created_at: new Date().toISOString() },
-    habits,
-    habitLogs,
-    checkins,
-    scheduleEntries: [
-      schedule("Plan the day", "routine", today, "08:30", "09:00", true),
-      schedule("Deep work", "career", today, "09:30", "11:00", false),
-      schedule("Walk", "movement", today, "18:00", "18:30", false)
-    ],
-    goals: [{ id: newId(), user_id: DEMO_USER_ID, title: "Build a steady weekday rhythm", category: "routine", target_date: addDaysIso(today, 21), status: "active", created_at: new Date().toISOString() }],
+    habits: [],
+    habitLogs: [],
+    checkins: [],
+    scheduleEntries: [],
+    weeklyMenuItems: [],
+    goals: [],
     weeklyReviews: []
-  };
-}
-
-function habit(id: string, name: string, category: HabitCategory, target: number, offset: number): Habit {
-  return { id, user_id: DEMO_USER_ID, name, category, target_per_week: target, is_active: true, created_at: new Date(Date.now() + offset * 86400000).toISOString() };
-}
-
-function checkin(date: string, index: number): DailyCheckin {
-  const now = `${date}T12:00:00.000Z`;
-  return {
-    id: newId(),
-    user_id: DEMO_USER_ID,
-    checkin_date: date,
-    bedtime: index % 4 === 0 ? "23:15" : "22:30",
-    wake_time: index % 5 === 0 ? "07:10" : "06:30",
-    sleep_quality: 3 + (index % 3),
-    energy: 3 + ((index + 1) % 3),
-    mood: 3 + ((index + 2) % 3),
-    water_intake: 6 + (index % 5),
-    workout_completed: index % 2 === 0,
-    yoga_completed: index % 3 !== 0,
-    meditation_completed: index % 4 !== 0,
-    walking_completed: index % 5 !== 0,
-    study_completed: index % 6 !== 0,
-    study_duration_minutes: index % 6 !== 0 ? 45 + (index % 3) * 15 : 0,
-    nutrition_adherence: 3 + (index % 3),
-    weight: 172 - index * 0.04,
-    notes: "Demo check-in for local testing.",
-    created_at: now,
-    updated_at: now
-  };
-}
-
-function schedule(title: string, category: HabitCategory, date: string, start: string, end: string, completed: boolean): ScheduleEntry {
-  return {
-    id: newId(),
-    user_id: DEMO_USER_ID,
-    entry_date: date,
-    planned_start: start,
-    planned_end: end,
-    actual_start: completed ? start : null,
-    actual_end: completed ? end : null,
-    title,
-    category,
-    completed,
-    created_at: new Date().toISOString()
   };
 }
 

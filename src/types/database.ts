@@ -1,5 +1,6 @@
 export type HabitCategory = "routine" | "recovery" | "movement" | "nutrition" | "career";
 export type GoalStatus = "active" | "paused" | "completed";
+export type MealSlot = "breakfast" | "forenoon" | "lunch" | "evening" | "dinner";
 
 type DbRecord = object;
 
@@ -96,12 +97,25 @@ export type WeeklyReview = DbRecord & {
   created_at: string;
 };
 
+export type WeeklyMenuItem = DbRecord & {
+  id: string;
+  user_id: string;
+  meal_date: string;
+  meal_slot: MealSlot;
+  meal_name: string;
+  planned_calories: number;
+  actual_calories: number | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type DailyCheckinInsert = Omit<DailyCheckin, "id" | "created_at" | "updated_at">;
 export type HabitInsert = Omit<Habit, "id" | "created_at">;
 export type HabitLogInsert = Omit<HabitLog, "id" | "created_at">;
 export type ScheduleEntryInsert = Omit<ScheduleEntry, "id" | "created_at" | "actual_start" | "actual_end" | "completed"> & Partial<Pick<ScheduleEntry, "actual_start" | "actual_end" | "completed">>;
 export type GoalInsert = Omit<Goal, "id" | "created_at" | "status"> & Partial<Pick<Goal, "status">>;
 export type WeeklyReviewInsert = Omit<WeeklyReview, "id" | "created_at">;
+export type WeeklyMenuItemInsert = Omit<WeeklyMenuItem, "id" | "created_at" | "updated_at">;
 
 export type Database = {
   public: {
@@ -113,11 +127,13 @@ export type Database = {
       schedule_entries: Table<ScheduleEntry, ScheduleEntryInsert, Partial<ScheduleEntry>>;
       goals: Table<Goal, GoalInsert, Partial<Goal>>;
       weekly_reviews: Table<WeeklyReview, WeeklyReviewInsert, Partial<WeeklyReview>>;
+      weekly_menu_items: Table<WeeklyMenuItem, WeeklyMenuItemInsert, Partial<WeeklyMenuItem>>;
     };
     Views: { [_ in never]: never };
     Functions: { [_ in never]: never };
     Enums: {
       habit_category: HabitCategory;
+      meal_slot: MealSlot;
     };
     CompositeTypes: { [_ in never]: never };
   };

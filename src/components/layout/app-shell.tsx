@@ -1,6 +1,6 @@
 import type { ComponentType, ReactNode } from "react";
 import Link from "next/link";
-import { Activity, CalendarDays, ChartNoAxesColumnIncreasing, HeartPulse, Home, ListChecks, LogOut, Settings, Sparkles } from "lucide-react";
+import { Activity, CalendarDays, ChartNoAxesColumnIncreasing, HeartPulse, Home, ListChecks, LogOut, Settings, Sparkles, UtensilsCrossed } from "lucide-react";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { signOutAction } from "@/app/auth/sign-out";
 import { isDemoMode } from "@/lib/demo-mode";
@@ -11,6 +11,7 @@ const navItems = [
   { href: "/today", label: "Today", icon: ListChecks },
   { href: "/habits", label: "Habits", icon: Activity },
   { href: "/schedule", label: "Schedule", icon: CalendarDays },
+  { href: "/weekly-menu", label: "Weekly menu", icon: UtensilsCrossed },
   { href: "/health", label: "Health", icon: HeartPulse },
   { href: "/insights", label: "Insights", icon: ChartNoAxesColumnIncreasing },
   { href: "/settings", label: "Settings", icon: Settings }
@@ -72,7 +73,7 @@ function DemoBanner() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm font-semibold uppercase tracking-wide text-teal-700 dark:text-teal-300">Demo workspace</p>
-          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">Seed data is loaded locally. Add or edit today&apos;s check-in to see your new information reflected across the dashboard.</p>
+          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">This local workspace starts clean. Add today&apos;s check-in, your routine, habits, and meals as you go.</p>
         </div>
         <Link className="inline-flex min-h-10 items-center justify-center rounded-md bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600 dark:bg-teal-500 dark:text-zinc-950 dark:hover:bg-teal-400 dark:focus-visible:outline-teal-400" href="/today">Add today&apos;s info</Link>
       </div>

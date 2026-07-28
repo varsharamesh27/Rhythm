@@ -15,3 +15,5 @@ export const scheduleActualSchema = z.object({
   actualEnd: z.string().optional(),
   completed: z.boolean()
 });
+
+export const scheduleDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Schedule date is invalid");

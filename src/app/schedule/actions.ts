@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getCurrentUserId } from "@/lib/db/auth";
-import { createScheduleEntry, updateScheduleActual } from "@/lib/db/schedule";
-import { scheduleActualSchema, scheduleEntrySchema } from "@/lib/validations/schedule";
+import { addRoutinePresetToSchedule, createScheduleEntry, updateScheduleActual } from "@/lib/db/schedule";
+import { scheduleActualSchema, scheduleDateSchema, scheduleEntrySchema } from "@/lib/validations/schedule";
 
 export async function createScheduleEntryAction(formData: FormData): Promise<void> {
   const userId = await getCurrentUserId();
@@ -39,6 +39,17 @@ export async function updateScheduleActualAction(formData: FormData): Promise<vo
     actualEnd: parsed.data.actualEnd || null,
     completed: parsed.data.completed
   });
+  revalidatePath("/schedule");
+  revalidatePath("/dashboard");
+}
+
+export async function applyRoutinePresetAction(formData: FormData): Promise<void> {
+  const userId = await getCurrentUserId();
+  if (!userId) redirect("/login");
+  const parsedDate = scheduleDateSchema.safeParse(formData.get("entryDate"));
+  if (!parsedDate.success) throw new Error(parsedDate.error.issues[0]?.message ?? "Schedule date is invalid");
+
+  await addRoutinePresetToSchedule(userId, parsedDate.data);
   revalidatePath("/schedule");
   revalidatePath("/dashboard");
 }

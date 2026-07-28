@@ -9,8 +9,9 @@ import { todayIso } from "@/lib/dates";
 import { getCurrentUserId } from "@/lib/db/auth";
 import { listScheduleEntries } from "@/lib/db/schedule";
 import { calculateScheduleAdherence, plannedMinutes } from "@/lib/metrics/schedule";
+import { PERSONAL_ROUTINE } from "@/lib/routine-preset";
 import type { HabitCategory } from "@/types/database";
-import { createScheduleEntryAction, updateScheduleActualAction } from "./actions";
+import { applyRoutinePresetAction, createScheduleEntryAction, updateScheduleActualAction } from "./actions";
 
 const categories: Array<{ value: HabitCategory; label: string }> = [
   { value: "routine", label: "Routine" },
@@ -68,21 +69,37 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
               ))}
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader><CardTitle>Add block</CardTitle></CardHeader>
-            <CardContent>
-              <form action={createScheduleEntryAction} className="grid gap-4">
-                <Label>Date<Input name="entryDate" type="date" defaultValue={date} required /></Label>
-                <Label>Title<Input name="title" required placeholder="Deep work" /></Label>
-                <div className="grid grid-cols-2 gap-3">
-                  <Label>Start<Input name="plannedStart" type="time" defaultValue="09:00" required /></Label>
-                  <Label>End<Input name="plannedEnd" type="time" defaultValue="10:30" required /></Label>
-                </div>
-                <Label>Category<Select name="category" defaultValue="career">{categories.map((category) => <option key={category.value} value={category.value}>{category.label}</option>)}</Select></Label>
-                <Button type="submit">Add block</Button>
-              </form>
-            </CardContent>
-          </Card>
+          <aside className="grid content-start gap-4">
+            <Card className="border-t-4 border-t-teal-500">
+              <CardHeader>
+                <CardTitle>My routine</CardTitle>
+                <p className="text-sm text-zinc-600 dark:text-zinc-300">
+                  {PERSONAL_ROUTINE.length} blocks from 5:45 AM through lights out. Existing plans stay in place.
+                </p>
+              </CardHeader>
+              <CardContent>
+                <form action={applyRoutinePresetAction}>
+                  <input type="hidden" name="entryDate" value={date} />
+                  <Button className="w-full" type="submit">Add routine to this day</Button>
+                </form>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader><CardTitle>Add block</CardTitle></CardHeader>
+              <CardContent>
+                <form action={createScheduleEntryAction} className="grid gap-4">
+                  <Label>Date<Input name="entryDate" type="date" defaultValue={date} required /></Label>
+                  <Label>Title<Input name="title" required placeholder="Deep work" /></Label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Label>Start<Input name="plannedStart" type="time" defaultValue="09:00" required /></Label>
+                    <Label>End<Input name="plannedEnd" type="time" defaultValue="10:30" required /></Label>
+                  </div>
+                  <Label>Category<Select name="category" defaultValue="career">{categories.map((category) => <option key={category.value} value={category.value}>{category.label}</option>)}</Select></Label>
+                  <Button type="submit">Add block</Button>
+                </form>
+              </CardContent>
+            </Card>
+          </aside>
         </section>
       </div>
     </AppShell>
