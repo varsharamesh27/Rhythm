@@ -1,6 +1,6 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { isDemoMode } from "@/lib/demo-mode";
+import { hasSupabaseConfiguration } from "@/lib/demo-mode";
 
 type CookieToSet = {
   name: string;
@@ -9,10 +9,10 @@ type CookieToSet = {
 };
 
 export async function middleware(request: NextRequest) {
-  if (isDemoMode()) return NextResponse.next({ request });
+  if (!hasSupabaseConfiguration()) return NextResponse.next({ request });
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_ANON_KEY;
   if (!url || !key) return NextResponse.next({ request });
 
   let response = NextResponse.next({ request });

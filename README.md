@@ -36,9 +36,9 @@ Open `http://127.0.0.1:3000`.
 ## Environment variables
 
 ```text
-NEXT_PUBLIC_SUPABASE_URL=your Supabase project URL
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your Supabase anon key
-NEXT_PUBLIC_SITE_URL=http://127.0.0.1:3000
+SUPABASE_URL=your Supabase project URL
+SUPABASE_ANON_KEY=your Supabase publishable or anon key
+SITE_URL=http://127.0.0.1:3000
 RHYTHM_OWNER_EMAIL=the only email allowed to sign in
 ```
 
@@ -50,7 +50,7 @@ Apply migrations in Supabase SQL editor or with the Supabase CLI:
 supabase db push
 ```
 
-Run migrations in filename order. `001_initial_schema.sql` creates the profile, habit, check-in, health, schedule, goal, and review tables. `002_weekly_menu.sql` adds `weekly_menu_items` and its meal-slot enum.
+Run migrations in filename order. `001_initial_schema.sql` creates the profile, habit, check-in, health, schedule, goal, and review tables. `002_weekly_menu.sql` adds `weekly_menu_items` and its meal-slot enum. `003_security_hardening.sql` enforces same-owner habit logs and adds indexes for owner-scoped dashboard queries.
 
 Every user-owned table has RLS policies using `auth.uid()`, so users can manage only their own records. A trigger creates a `public.users` profile when a Supabase auth user is created.
 
@@ -67,7 +67,7 @@ npm test
 npm run test:e2e
 ```
 
-The Playwright test requires an authenticated Supabase browser state. Save it as a storage state file and set `PLAYWRIGHT_STORAGE_STATE`, or add a test setup step that signs in before visiting `/today`.
+Playwright starts the application in local demo mode, resets the disposable local store, and covers theme switching, sign-out, daily check-in, weekly menu, and routine workflows. It never writes the local demo data to Supabase.
 
 ## Architecture decisions
 
@@ -79,38 +79,40 @@ The Playwright test requires an authenticated Supabase browser state. Save it as
 
 ## Deployment
 
-The recommended long-term setup is Vercel for the Next.js app and Supabase for authentication and private PostgreSQL storage.
+Rhythm is deployed privately with Codex Sites and uses an OpenNext Cloudflare Worker build. On Windows, `npm run build` performs the normal Next.js validation build. On the Linux deployment host it additionally creates a server-capable `dist` artifact from `.open-next`.
 
-The repository also includes an OpenNext Cloudflare build for Codex Sites. On Windows, `npm run build` performs the normal Next.js validation build. On the Linux deployment host it additionally creates a server-capable `dist` artifact from `.open-next`.
+Supabase provides durable PostgreSQL storage and magic-link authentication:
 
 1. Create a Supabase project and keep its database password in a password manager.
-2. Open the Supabase SQL editor and run `supabase/migrations/001_initial_schema.sql`, followed by `supabase/migrations/002_weekly_menu.sql`.
+2. Open the Supabase SQL editor and run `supabase/migrations/001_initial_schema.sql`, `002_weekly_menu.sql`, and `003_security_hardening.sql` in that order.
 3. In Supabase project settings, copy the project URL and publishable/anon key.
-4. Import this GitHub repository into Vercel.
-5. Add these Vercel environment variables for Production, Preview, and Development:
+4. Add these variables to the Codex Sites production environment:
 
 ```text
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your publishable or anon key
-NEXT_PUBLIC_SITE_URL=https://your-rhythm-domain.vercel.app
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your publishable or anon key
+SITE_URL=https://rhythm-personal-tracker.varsha2709.chatgpt.site
 RHYTHM_OWNER_EMAIL=your-email@example.com
 ```
 
-6. In Supabase Authentication URL Configuration, set:
+5. In Supabase Authentication URL Configuration, set:
 
 ```text
-Site URL: https://your-rhythm-domain.vercel.app
-Redirect URL: https://your-rhythm-domain.vercel.app/auth/callback
+Site URL: https://rhythm-personal-tracker.varsha2709.chatgpt.site
+Redirect URL: https://rhythm-personal-tracker.varsha2709.chatgpt.site/auth/callback
 ```
 
-7. Deploy, open the deployed login page, and send the first magic link to the exact `RHYTHM_OWNER_EMAIL`.
+6. Save a new Sites version and deploy it so the environment revision is applied.
+7. Open the deployed login page and send the first magic link to the exact `RHYTHM_OWNER_EMAIL`.
 8. After the owner account exists, disable new-user sign-ups in Supabase Authentication settings. Existing-user magic links will continue to work.
 
-The owner email check in the app and Supabase row-level security provide separate protections. The anon key is designed to be public; never place a Supabase service-role key in this app or in a `NEXT_PUBLIC_` variable.
+The owner email check in the app and Supabase row-level security provide separate protections. The publishable/anon key is safe for client use, but Rhythm keeps it server-side because no browser component needs direct database access. Never configure a Supabase service-role key.
+
+Codex Sites access must remain `custom` with only the owner account allowed. This outer access gate is separate from the application login and Supabase RLS.
 
 ## Moving from demo mode
 
-Demo data lives only in `.demo-data.json` on the local computer. It is intentionally not uploaded automatically because it may contain personal entries. Start the production account with a clean history, then enter the current day through the Today page.
+Demo data lives only in `.demo-data.json` on the local computer. It is intentionally not uploaded automatically because it may contain personal entries. Production never falls back to this file: without Supabase configuration, the deployed login page pauses tracking and displays a database setup message.
 
 Once real Supabase variables are present, demo mode turns off automatically:
 
@@ -127,3 +129,8 @@ Before using rhythm as the primary tracker:
 npm run lint
 npm run typecheck
 npm test
+npm run test:e2e
+npm run build
+```
+
+Then verify the production site is still owner-only, complete a test check-in, refresh the page, and confirm the entry remains before recording personal health information.
