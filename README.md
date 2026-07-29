@@ -1,6 +1,6 @@
 # rhythm
 
-rhythm is a private habit, health, meal, and schedule-tracking web app for one person. It tracks routine consistency, sleep, workouts, yoga, meditation, walking, hydration, nutrition consistency, planned and actual calories, weight trends, mood, energy, study sessions, goals, weekly reviews, and planned-versus-actual schedule adherence.
+rhythm is a personal habit, health, meal, and schedule-tracking web app. Each person receives a private workspace for routine consistency, sleep, workouts, yoga, meditation, walking, hydration, nutrition consistency, planned and actual calories, weight trends, mood, energy, study sessions, goals, weekly reviews, and planned-versus-actual schedule adherence.
 
 No AI model is integrated yet. Current insights are deterministic summaries from your own logs.
 
@@ -23,7 +23,9 @@ No AI model is integrated yet. Current insights are deterministic summaries from
 
 ## Local setup
 
-Install Node.js 20 or newer, then run:
+The repository includes a project-local Node runtime for Windows. In VS Code, use **Terminal > Run Task > Rhythm: Start local app**. The task keeps the server in a dedicated terminal and avoids depending on a global Node installation.
+
+Alternatively, install Node.js 20 or newer and run:
 
 ```powershell
 npm install
@@ -39,7 +41,6 @@ Open `http://127.0.0.1:3000`.
 SUPABASE_URL=your Supabase project URL
 SUPABASE_ANON_KEY=your Supabase publishable or anon key
 SITE_URL=http://127.0.0.1:3000
-RHYTHM_OWNER_EMAIL=the only email allowed to sign in
 ```
 
 ## Database setup
@@ -50,7 +51,7 @@ Apply migrations in Supabase SQL editor or with the Supabase CLI:
 supabase db push
 ```
 
-Run migrations in filename order. `001_initial_schema.sql` creates the profile, habit, check-in, health, schedule, goal, and review tables. `002_weekly_menu.sql` adds `weekly_menu_items` and its meal-slot enum. `003_security_hardening.sql` enforces same-owner habit logs and adds indexes for owner-scoped dashboard queries.
+Run migrations in filename order. `001_initial_schema.sql` creates the profile, habit, check-in, health, schedule, goal, and review tables. `002_weekly_menu.sql` adds `weekly_menu_items` and its meal-slot enum. `003_security_hardening.sql` enforces same-user habit logs and adds indexes for user-scoped dashboard queries.
 
 Every user-owned table has RLS policies using `auth.uid()`, so users can manage only their own records. A trigger creates a `public.users` profile when a Supabase auth user is created.
 
@@ -73,50 +74,60 @@ Playwright starts the application in local demo mode, resets the disposable loca
 
 - App routes live under `src/app` with readable folder names: `dashboard`, `today`, `habits`, `schedule`, `health`, `insights`, `settings`, and `login`.
 - Database access is isolated in `src/lib/db`; UI components call typed functions or server actions, not Supabase directly.
+- Next.js server components and server actions are the application backend. `src/lib/supabase/server.ts` creates the cookie-aware Supabase client used by that backend.
+- Supabase Auth owns accounts and sessions. Supabase PostgreSQL is the durable data store; records are associated with the authenticated user's UUID.
 - Zod schemas live in `src/lib/validations` and validate server action input.
 - Calculation utilities live in `src/lib/metrics` so they can be unit tested without React or Supabase.
 - Weight is shown as one health trend, not as the primary success measure. Routine, recovery, movement, nutrition, and career progress stay separate.
 
 ## Deployment
 
-Rhythm is deployed privately with Codex Sites and uses an OpenNext Cloudflare Worker build. On Windows, `npm run build` performs the normal Next.js validation build. On the Linux deployment host it additionally creates a server-capable `dist` artifact from `.open-next`.
+For a public, multi-user release, the recommended pairing is **Vercel + Supabase**. Vercel runs the Next.js application and creates preview deployments for pull requests; Supabase provides authentication and PostgreSQL. Codex Sites remains supported by the repository's OpenNext Cloudflare build, but its access control should remain private until Supabase is configured.
 
-Supabase provides durable PostgreSQL storage and magic-link authentication:
+### Supabase
 
 1. Create a Supabase project and keep its database password in a password manager.
 2. Open the Supabase SQL editor and run `supabase/migrations/001_initial_schema.sql`, `002_weekly_menu.sql`, and `003_security_hardening.sql` in that order.
 3. In Supabase project settings, copy the project URL and publishable/anon key.
-4. Add these variables to the Codex Sites production environment:
+4. Add these variables to the chosen host's production environment:
 
 ```text
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_ANON_KEY=your publishable or anon key
-SITE_URL=https://rhythm-personal-tracker.varsha2709.chatgpt.site
-RHYTHM_OWNER_EMAIL=your-email@example.com
+SITE_URL=https://your-production-domain.example
 ```
 
 5. In Supabase Authentication URL Configuration, set:
 
 ```text
-Site URL: https://rhythm-personal-tracker.varsha2709.chatgpt.site
-Redirect URL: https://rhythm-personal-tracker.varsha2709.chatgpt.site/auth/callback
+Site URL: https://your-production-domain.example
+Redirect URL: https://your-production-domain.example/auth/callback
 ```
 
-6. Save a new Sites version and deploy it so the environment revision is applied.
-7. Open the deployed login page and send the first magic link to the exact `RHYTHM_OWNER_EMAIL`.
-8. After the owner account exists, disable new-user sign-ups in Supabase Authentication settings. Existing-user magic links will continue to work.
+6. Configure custom SMTP before inviting many people. Supabase's default mail sender is intended for initial testing and has a low rate limit.
+7. Configure Auth rate limits and CAPTCHA, require MFA for project administrators, and enable SSL enforcement.
+8. Deploy and create two test accounts. Confirm that each account can see only its own records.
 
-The owner email check in the app and Supabase row-level security provide separate protections. The publishable/anon key is safe for client use, but Rhythm keeps it server-side because no browser component needs direct database access. Never configure a Supabase service-role key.
+The publishable/anon key is designed for client-facing applications, but Rhythm keeps it server-side because no browser component needs direct database access. Never configure a Supabase service-role key in this application. RLS is the data-isolation boundary and must remain enabled for every user-owned table.
 
-Codex Sites access must remain `custom` with only the owner account allowed. This outer access gate is separate from the application login and Supabase RLS.
+### Vercel
+
+1. Import the GitHub repository into Vercel.
+2. Add the three environment variables above to Production and Preview.
+3. Set the production domain, then update `SITE_URL` and Supabase's allowed URLs to match it.
+4. Deploy from `main` only after the feature PR is approved and merged.
+
+### Codex Sites
+
+The existing Sites project uses an OpenNext Cloudflare Worker build. On Windows, `npm run build` performs the normal Next.js validation build; on the Linux deployment host it also creates the server-capable `dist` artifact. Keep Sites access restricted until the Supabase environment is connected and tested.
 
 ## Moving from demo mode
 
-Demo data lives only in `.demo-data.json` on the local computer. It is intentionally not uploaded automatically because it may contain personal entries. Production never falls back to this file: without Supabase configuration, the deployed login page pauses tracking and displays a database setup message.
+Demo data lives only in `.demo-data.json` on the local computer. It is intentionally not uploaded because it may contain personal entries. Production never falls back to this file: without Supabase configuration, the deployed login page pauses tracking and displays a database setup message.
 
 Once real Supabase variables are present, demo mode turns off automatically:
 
-- Login uses a magic link sent to the owner email.
+- Login uses a magic link and creates a private workspace for each authenticated user.
 - Check-ins, habits, schedules, goals, reviews, and settings are stored in Supabase.
 - Refreshing, restarting, or changing devices does not remove cloud records.
 - RLS restricts every query to the authenticated user's records.
@@ -133,4 +144,4 @@ npm run test:e2e
 npm run build
 ```
 
-Then verify the production site is still owner-only, complete a test check-in, refresh the page, and confirm the entry remains before recording personal health information.
+Then verify account isolation with two test users, complete a check-in, refresh the page, and confirm the entry remains. Add a privacy notice and retention/deletion policy before inviting people to enter health information.

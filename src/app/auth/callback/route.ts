@@ -1,5 +1,4 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { isOwnerEmail } from "@/lib/auth-configuration";
 import { hasSupabaseConfiguration } from "@/lib/demo-mode";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -23,14 +22,6 @@ export async function GET(request: NextRequest) {
   const { error } = await supabase.auth.exchangeCodeForSession(code);
   if (error) {
     return NextResponse.redirect(new URL(`/login?message=${encodeURIComponent(error.message)}`, request.url));
-  }
-
-  const { data } = await supabase.auth.getUser();
-  if (!isOwnerEmail(data.user?.email)) {
-    await supabase.auth.signOut();
-    return NextResponse.redirect(
-      new URL("/login?message=This private workspace is limited to its owner.", request.url)
-    );
   }
 
   return NextResponse.redirect(new URL(next, request.url));

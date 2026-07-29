@@ -3,7 +3,6 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { getOwnerEmail, normalizeEmail } from "@/lib/auth-configuration";
 import {
   hasSupabaseConfiguration,
   isDatabaseSetupRequired,
@@ -22,25 +21,19 @@ export async function signInWithEmail(formData: FormData) {
   const parsedEmail = emailSchema.safeParse(formData.get("email"));
   if (!parsedEmail.success) redirect("/login?message=Enter a valid email address.");
 
-  const email = normalizeEmail(parsedEmail.data);
-  const ownerEmail = getOwnerEmail();
-  if (!ownerEmail) {
-    redirect("/login?message=The private owner email has not been configured.");
-  }
-  if (email !== ownerEmail) {
-    redirect("/login?message=This private workspace is limited to its owner.");
-  }
-
-  const origin = (await headers()).get("origin") ?? process.env.SITE_URL ?? "http://127.0.0.1:3000";
+  const requestOrigin = (await headers()).get("origin");
+  const origin = process.env.SITE_URL?.replace(/\/$/, "") ?? requestOrigin ?? "http://127.0.0.1:3000";
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.auth.signInWithOtp({
-    email,
+    email: parsedEmail.data.toLowerCase(),
     options: {
       emailRedirectTo: `${origin}/auth/callback?next=/dashboard`,
       shouldCreateUser: true
     }
   });
-  if (error) redirect(`/login?message=${encodeURIComponent(error.message)}`);
+  if (error) {
+    redirect("/login?message=We could not send a sign-in link. Wait a minute and try again.");
+  }
   redirect("/login?message=Check your email for a secure sign-in link.");
 }
 

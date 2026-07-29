@@ -17,7 +17,7 @@ export function CheckinForm({ today, existing }: { today: string; existing: Dail
   return (
     <Card>
       <CardHeader>
-        <p className="text-sm font-semibold uppercase tracking-wide text-teal-700 dark:text-teal-300">Today</p>
+        <p className="text-sm font-semibold uppercase text-teal-700 dark:text-teal-300">Today</p>
         <CardTitle>Daily check-in</CardTitle>
         <p className="text-sm text-zinc-600 dark:text-zinc-300">A calm two-minute pass through routine, recovery, movement, nutrition, and career progress.</p>
       </CardHeader>

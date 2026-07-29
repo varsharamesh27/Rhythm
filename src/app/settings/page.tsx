@@ -18,13 +18,13 @@ export default async function SettingsPage() {
       <div className="grid gap-6">
         <div>
           <h1 className="text-3xl font-bold tracking-normal">Settings</h1>
-          <p className="mt-2 max-w-2xl text-zinc-600 dark:text-zinc-300">Keep your private rhythm profile simple and portable.</p>
+          <p className="mt-2 max-w-2xl text-zinc-600 dark:text-zinc-300">Set the name and timezone used across your personal workspace.</p>
         </div>
         <Card className="max-w-xl">
           <CardHeader><CardTitle>Profile</CardTitle></CardHeader>
           <CardContent>
             <form action={saveSettingsAction} className="grid gap-4">
-              <Label>Display name<Input name="displayName" defaultValue={profile?.display_name ?? "Varsh"} required /></Label>
+              <Label>Display name<Input name="displayName" defaultValue={profile?.display_name ?? ""} placeholder="Your name" required /></Label>
               <Label>Timezone<Input name="timezone" defaultValue={profile?.timezone ?? "America/New_York"} required /></Label>
               <Button type="submit">Save settings</Button>
             </form>

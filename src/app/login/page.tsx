@@ -23,7 +23,13 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
       </div>
       <Card className="w-full max-w-md border-t-4 border-t-rose-500 dark:border-t-teal-400">
         <CardHeader>
-          <p className="text-sm font-semibold uppercase tracking-wide text-teal-700 dark:text-teal-300">Private tracker</p>
+          <div className="mb-2 flex items-center gap-2" aria-hidden="true">
+            <span className="h-2 w-8 rounded-sm bg-rose-500" />
+            <span className="h-2 w-5 rounded-sm bg-amber-400" />
+            <span className="h-2 w-11 rounded-sm bg-teal-500" />
+            <span className="h-2 w-4 rounded-sm bg-violet-500" />
+          </div>
+          <p className="text-sm font-semibold uppercase text-teal-700 dark:text-teal-300">Personal rhythm</p>
           <CardTitle className="text-2xl">
             {databaseSetupRequired ? "Finish private database setup" : "Sign in to rhythm"}
           </CardTitle>
@@ -32,7 +38,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
               ? "Production tracking is paused until durable private storage is connected."
               : demoMode
                 ? "Use the clean local demo workspace while you set up your database."
-                : "Use the secure magic link sent to your owner email."}
+                : "A secure magic link opens your own private tracking workspace."}
           </p>
         </CardHeader>
         <CardContent className="grid gap-5">
@@ -47,13 +53,14 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           ) : null}
           {databaseSetupRequired ? (
             <div className="rounded-md border border-amber-300 bg-amber-50 p-4 text-sm text-zinc-800 dark:border-amber-700 dark:bg-zinc-800 dark:text-zinc-100" role="status">
-              No tracking data can be submitted from this deployment yet. Connect the Supabase project, apply the migrations, and then sign in with your owner email.
+              No tracking data can be submitted from this deployment yet. Connect Supabase and apply the migrations before opening account registration.
             </div>
           ) : null}
           {supabaseConfigured ? (
             <form action={signInWithEmail} className="grid gap-4">
-              <Label>Email<Input name="email" type="email" required placeholder="you@example.com" /></Label>
+              <Label>Email address<Input name="email" type="email" autoComplete="email" required placeholder="you@example.com" /></Label>
               <Button type="submit">Send magic link</Button>
+              <p className="text-sm text-zinc-600 dark:text-zinc-300">New emails create a private workspace. Returning members continue where they left off.</p>
             </form>
           ) : null}
           {params.message ? <p className="rounded-md bg-teal-50 p-3 text-sm text-teal-800 dark:bg-teal-950 dark:text-teal-200">{params.message}</p> : null}
