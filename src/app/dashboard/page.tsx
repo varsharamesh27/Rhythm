@@ -71,7 +71,7 @@ export default async function DashboardPage() {
           <MetricCard title="Schedule adherence" value={`${scheduleAdherence}%`} helper="Completed planned blocks from the last seven days." tone="routine" icon={CalendarCheck2} />
           <MetricCard title="Weekly workout count" value={`${metrics.weeklyWorkoutCount}`} helper="Movement tracked separately from weight." tone="movement" icon={Dumbbell} />
           <MetricCard title="Study sessions" value={`${metrics.studySessionCount}`} helper="Career progress through consistent sessions." tone="career" icon={NotebookPen} />
-          <MetricCard title="Hydration consistency" value={`${metrics.hydrationConsistency}%`} helper="Days with at least eight cups logged." tone="recovery" icon={GlassWater} />
+          <MetricCard title="Hydration consistency" value={`${metrics.hydrationConsistency}%`} helper="Days with at least eight 250 mL glasses logged." tone="recovery" icon={GlassWater} />
           <MetricCard
             title="Calories recorded"
             value={calorieSummary.recordedMeals > 0 ? `${calorieSummary.actualCalories.toLocaleString()} kcal` : "Not logged"}

@@ -27,7 +27,7 @@ export default async function HealthPage() {
           <MetricCard title="Latest mood" value={latest ? `${latest.mood}/5` : "--"} helper="Logged from your daily check-in." />
           <MetricCard title="Average energy" value={averageEnergy ? `${averageEnergy.toFixed(1)}/5` : "--"} helper="Last 30 check-ins." />
           <MetricCard title="Nutrition consistency" value={averageNutrition ? `${averageNutrition.toFixed(1)}/5` : "--"} helper="Plan adherence without shame wording." />
-          <MetricCard title="Hydration consistency" value={`${metrics.hydrationConsistency}%`} helper="Days at eight or more cups recently." />
+          <MetricCard title="Hydration consistency" value={`${metrics.hydrationConsistency}%`} helper="Days at eight or more 250 mL glasses recently." />
         </section>
         <DashboardCharts metrics={metrics} />
         <Card>
@@ -35,7 +35,7 @@ export default async function HealthPage() {
           <CardContent className="overflow-x-auto">
             {checkins.length === 0 ? <p className="text-sm text-muted-foreground">No health check-ins yet.</p> : (
               <table className="w-full min-w-[680px] text-left text-sm">
-                <thead className="text-muted-foreground"><tr><th className="py-2">Date</th><th>Mood</th><th>Energy</th><th>Water</th><th>Workout</th><th>Walking</th><th>Study</th><th>Weight</th></tr></thead>
+                <thead className="text-muted-foreground"><tr><th className="py-2">Date</th><th>Mood</th><th>Energy</th><th>Water (glasses)</th><th>Workout</th><th>Walking</th><th>Study</th><th>Weight</th></tr></thead>
                 <tbody>{checkins.slice(-10).reverse().map((checkin) => <tr key={checkin.id} className="border-t border-border"><td className="py-3">{checkin.checkin_date}</td><td>{checkin.mood}/5</td><td>{checkin.energy}/5</td><td>{checkin.water_intake}</td><td>{checkin.workout_completed ? "Yes" : "No"}</td><td>{checkin.walking_completed ? "Yes" : "No"}</td><td>{checkin.study_completed ? "Yes" : "No"}</td><td>{checkin.weight ?? "--"}</td></tr>)}</tbody>
               </table>
             )}
