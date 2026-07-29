@@ -35,19 +35,19 @@ export default async function WeeklyMenuPage({
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <div className="flex items-center gap-3">
-              <span className="grid size-10 place-items-center rounded-md bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-200">
+              <span className="grid size-10 place-items-center rounded-full border border-border text-[hsl(var(--nutrition))]">
                 <UtensilsCrossed size={20} />
               </span>
-              <h1 className="text-3xl font-bold tracking-normal">Weekly menu</h1>
+              <h1 className="font-display text-4xl font-semibold">Weekly menu</h1>
             </div>
-            <p className="mt-2 max-w-2xl text-zinc-600 dark:text-zinc-300">
+            <p className="mt-2 max-w-2xl text-muted-foreground">
               Plan each meal, then record actual calories when you know them. The weekly totals are context, not a grade.
             </p>
           </div>
           <div className="flex items-center gap-2">
             <Link
               aria-label="Previous week"
-              className="grid size-10 place-items-center rounded-md bg-white shadow-sm ring-1 ring-rose-100 hover:bg-rose-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-rose-600 dark:bg-zinc-900 dark:ring-zinc-700 dark:hover:bg-zinc-800 dark:focus-visible:outline-teal-400"
+              className="grid size-10 place-items-center rounded-md border border-border bg-card hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
               href={`/weekly-menu?week=${addDaysIso(weekStart, -7)}`}
               title="Previous week"
             >
@@ -58,7 +58,7 @@ export default async function WeeklyMenuPage({
             </span>
             <Link
               aria-label="Next week"
-              className="grid size-10 place-items-center rounded-md bg-white shadow-sm ring-1 ring-rose-100 hover:bg-rose-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-rose-600 dark:bg-zinc-900 dark:ring-zinc-700 dark:hover:bg-zinc-800 dark:focus-visible:outline-teal-400"
+              className="grid size-10 place-items-center rounded-md border border-border bg-card hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
               href={`/weekly-menu?week=${addDaysIso(weekStart, 7)}`}
               title="Next week"
             >
@@ -68,7 +68,7 @@ export default async function WeeklyMenuPage({
         </div>
 
         {params.saved === "1" ? (
-          <p className="rounded-md bg-teal-50 p-3 text-sm font-medium text-teal-800 dark:bg-teal-950 dark:text-teal-200" role="status">
+          <p className="border-l-2 border-accent bg-muted p-3 text-sm font-medium text-foreground" role="status">
             Weekly menu saved.
           </p>
         ) : null}
@@ -76,15 +76,15 @@ export default async function WeeklyMenuPage({
         <section className="grid gap-4 sm:grid-cols-3" aria-label="Weekly calorie summary">
           <Card>
             <CardHeader><CardTitle className="text-base">Planned</CardTitle></CardHeader>
-            <CardContent><p className="text-2xl font-bold">{summary.plannedCalories.toLocaleString()} kcal</p><p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">{summary.plannedMeals} meals across {summary.plannedDays} days</p></CardContent>
+            <CardContent><p className="font-display text-2xl font-semibold">{summary.plannedCalories.toLocaleString()} kcal</p><p className="mt-1 text-sm text-muted-foreground">{summary.plannedMeals} meals across {summary.plannedDays} days</p></CardContent>
           </Card>
           <Card>
             <CardHeader><CardTitle className="text-base">Recorded</CardTitle></CardHeader>
-            <CardContent><p className="text-2xl font-bold">{summary.actualCalories.toLocaleString()} kcal</p><p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">{summary.recordedMeals} meals have actual calories</p></CardContent>
+            <CardContent><p className="font-display text-2xl font-semibold">{summary.actualCalories.toLocaleString()} kcal</p><p className="mt-1 text-sm text-muted-foreground">{summary.recordedMeals} meals have actual calories</p></CardContent>
           </Card>
           <Card>
             <CardHeader><CardTitle className="text-base">Week</CardTitle></CardHeader>
-            <CardContent><p className="text-2xl font-bold">{formatShortDate(weekStart)}</p><p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">Monday through Sunday</p></CardContent>
+            <CardContent><p className="font-display text-2xl font-semibold">{formatShortDate(weekStart)}</p><p className="mt-1 text-sm text-muted-foreground">Monday through Sunday</p></CardContent>
           </Card>
         </section>
 
@@ -97,20 +97,20 @@ export default async function WeeklyMenuPage({
           {dates.map((date) => {
             const dayName = new Date(`${date}T12:00:00`).toLocaleDateString(undefined, { weekday: "long" });
             return (
-              <section className="border-t border-rose-200 pt-5 dark:border-zinc-700" key={date}>
+              <section className="border-t border-border pt-5" key={date}>
                 <div className="mb-4 flex items-baseline justify-between gap-3">
-                  <h2 className="text-xl font-bold">{dayName}</h2>
-                  <p className="text-sm text-zinc-600 dark:text-zinc-300">{formatShortDate(date)}</p>
+                  <h2 className="font-display text-xl font-semibold">{dayName}</h2>
+                  <p className="text-sm text-muted-foreground">{formatShortDate(date)}</p>
                 </div>
-                <div className="hidden grid-cols-[110px_minmax(220px,1fr)_120px_120px] gap-3 border-b border-rose-100 pb-2 text-xs font-semibold uppercase text-zinc-500 dark:border-zinc-800 dark:text-zinc-400 sm:grid">
+                <div className="hidden grid-cols-[110px_minmax(220px,1fr)_120px_120px] gap-3 border-b border-border pb-2 text-xs font-semibold text-muted-foreground sm:grid">
                   <span>Meal</span><span>Plan</span><span>Planned kcal</span><span>Actual kcal</span>
                 </div>
                 <div className="grid">
                   {MEAL_SLOTS.map((slot) => {
                     const item = itemByKey.get(`${date}:${slot.value}`);
                     return (
-                      <div className="grid grid-cols-2 gap-3 border-b border-rose-100 py-4 last:border-b-0 dark:border-zinc-800 sm:grid-cols-[110px_minmax(220px,1fr)_120px_120px] sm:items-end" key={slot.value}>
-                        <p className="col-span-2 font-semibold text-teal-800 dark:text-teal-200 sm:col-span-1">{slot.label}</p>
+                      <div className="grid grid-cols-2 gap-3 border-b border-border py-4 last:border-b-0 sm:grid-cols-[110px_minmax(220px,1fr)_120px_120px] sm:items-end" key={slot.value}>
+                        <p className="col-span-2 font-semibold text-[hsl(var(--nutrition))] sm:col-span-1">{slot.label}</p>
                         <Label className="col-span-2 sm:col-span-1">
                           <span className="sm:hidden">Meal plan</span>
                           <Input

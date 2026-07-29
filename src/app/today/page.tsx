@@ -13,8 +13,8 @@ export default async function TodayPage() {
     <AppShell>
       <div className="grid gap-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-normal">Today</h1>
-          <p className="mt-2 max-w-2xl text-zinc-600 dark:text-zinc-300">Log what happened, then let the dashboard show the pattern. No single day gets to define the whole story.</p>
+          <h1 className="font-display text-4xl font-semibold">Today</h1>
+          <p className="mt-2 max-w-2xl text-muted-foreground">Log what happened, then let the dashboard show the pattern. No single day gets to define the whole story.</p>
         </div>
         <CheckinForm today={today} existing={existing} />
       </div>

@@ -15,42 +15,42 @@ const categories: Array<{
   barClass: string;
   textClass: string;
 }> = [
-  { key: "routine", label: "Routine", icon: Repeat2, barClass: "bg-rose-500", textClass: "text-rose-600 dark:text-rose-400" },
-  { key: "recovery", label: "Recovery", icon: MoonStar, barClass: "bg-cyan-500", textClass: "text-cyan-700 dark:text-cyan-400" },
-  { key: "movement", label: "Movement", icon: Dumbbell, barClass: "bg-lime-500", textClass: "text-lime-700 dark:text-lime-400" },
-  { key: "nutrition", label: "Nutrition", icon: Salad, barClass: "bg-amber-400", textClass: "text-amber-700 dark:text-amber-400" },
-  { key: "career", label: "Career", icon: BriefcaseBusiness, barClass: "bg-violet-500", textClass: "text-violet-700 dark:text-violet-400" }
+  { key: "routine", label: "Routine", icon: Repeat2, barClass: "bg-[hsl(var(--routine))]", textClass: "text-[hsl(var(--routine))]" },
+  { key: "recovery", label: "Recovery", icon: MoonStar, barClass: "bg-[hsl(var(--recovery))]", textClass: "text-[hsl(var(--recovery))]" },
+  { key: "movement", label: "Movement", icon: Dumbbell, barClass: "bg-[hsl(var(--movement))]", textClass: "text-[hsl(var(--movement))]" },
+  { key: "nutrition", label: "Nutrition", icon: Salad, barClass: "bg-[hsl(var(--nutrition))]", textClass: "text-[hsl(var(--nutrition))]" },
+  { key: "career", label: "Career", icon: BriefcaseBusiness, barClass: "bg-[hsl(var(--career))]", textClass: "text-[hsl(var(--career))]" }
 ];
 
 export function CategorySpectrum({ scores }: { scores: CategoryScores }) {
   return (
-    <section className="border-y border-zinc-200 bg-white px-4 py-5 dark:border-zinc-800 dark:bg-zinc-950" aria-labelledby="rhythm-spectrum-title">
-      <div className="mb-5 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+    <section className="border-y border-border bg-card" aria-labelledby="rhythm-spectrum-title">
+      <div className="flex flex-col gap-1 border-b border-border px-5 py-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h2 className="text-lg font-bold" id="rhythm-spectrum-title">Rhythm spectrum</h2>
-          <p className="text-sm text-zinc-600 dark:text-zinc-300">Five signals, kept separate so one number never defines the week.</p>
+          <h2 className="font-display text-xl font-semibold" id="rhythm-spectrum-title">Weekly balance</h2>
+          <p className="text-sm text-muted-foreground">Five measures, kept independent by design.</p>
         </div>
-        <p className="text-xs font-semibold uppercase text-zinc-500 dark:text-zinc-400">Recent seven days</p>
+        <p className="text-xs font-medium text-muted-foreground">Recent seven days</p>
       </div>
-      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-5">
+      <div className="grid sm:grid-cols-2 xl:grid-cols-5">
         {categories.map((category) => {
           const Icon = category.icon;
           const score = scores[category.key];
           return (
-            <div className="min-w-0" key={category.key}>
-              <div className="mb-2 flex items-center justify-between gap-3">
-                <span className={`inline-flex items-center gap-2 text-sm font-bold ${category.textClass}`}>
+            <div className="min-w-0 border-b border-border px-5 py-4 last:border-b-0 sm:[&:nth-last-child(-n+2)]:border-b-0 xl:border-b-0 xl:border-r xl:last:border-r-0" key={category.key}>
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <span className={`inline-flex items-center gap-2 text-sm font-semibold ${category.textClass}`}>
                   <Icon size={16} />
                   {category.label}
                 </span>
-                <span className="text-sm font-black tabular-nums">{score}%</span>
+                <span className="font-display text-lg font-semibold tabular-nums">{score}%</span>
               </div>
               <div
                 aria-label={`${category.label} progress`}
                 aria-valuemax={100}
                 aria-valuemin={0}
                 aria-valuenow={score}
-                className="h-2 overflow-hidden rounded-sm bg-zinc-100 dark:bg-zinc-800"
+                className="h-1 overflow-hidden bg-muted"
                 role="progressbar"
               >
                 <div className={`h-full ${category.barClass}`} style={{ width: `${score}%` }} />

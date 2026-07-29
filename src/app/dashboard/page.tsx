@@ -5,7 +5,9 @@ import {
   Dumbbell,
   GlassWater,
   ListChecks,
+  ListTodo,
   NotebookPen,
+  PenLine,
   Repeat2,
   UtensilsCrossed
 } from "lucide-react";
@@ -48,22 +50,22 @@ export default async function DashboardPage() {
   return (
     <AppShell>
       <div className="grid gap-6">
-        <header className="border-l-4 border-l-rose-500 pl-5 sm:flex sm:items-end sm:justify-between sm:gap-6">
+        <header className="border-b border-border pb-6 sm:flex sm:items-end sm:justify-between sm:gap-6">
           <div>
-            <p className="text-sm font-bold text-rose-600 dark:text-rose-400">Your last seven days</p>
-            <h1 className="text-3xl font-bold tracking-normal">Dashboard</h1>
-            <p className="mt-2 max-w-2xl text-zinc-600 dark:text-zinc-300">Your routine, recovery, movement, nutrition, and career signals in one calm view.</p>
+            <p className="mb-2 text-sm font-medium text-muted-foreground">Overview · {formatDashboardDate(today)}</p>
+            <h1 className="font-display text-4xl font-semibold">Dashboard</h1>
+            <p className="mt-2 max-w-2xl text-muted-foreground">A measured view of routine, recovery, movement, nutrition, and career.</p>
           </div>
           <div className="mt-4 flex flex-wrap gap-2 sm:mt-0">
-            <Link className="inline-flex min-h-10 items-center justify-center rounded-md border border-zinc-300 bg-white px-4 py-2 text-sm font-semibold text-zinc-900 hover:bg-zinc-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800" href="/habits">Open habits</Link>
-            <Link className="inline-flex min-h-10 items-center justify-center rounded-md bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600" href="/today">Open today</Link>
+            <Link className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-border bg-card px-4 py-2 text-sm font-semibold text-foreground hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" href="/habits"><ListTodo size={17} />Review habits</Link>
+            <Link className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" href="/today"><PenLine size={17} />Log today</Link>
           </div>
         </header>
         {checkins.length === 0 && habits.length === 0 ? (
-          <Card><CardHeader><CardTitle>Start with today</CardTitle></CardHeader><CardContent><p className="text-zinc-600 dark:text-zinc-300">Complete a daily check-in or add a habit to begin building your rhythm.</p></CardContent></Card>
+          <Card className="border-l-2 border-l-primary"><CardHeader><CardTitle>Begin today&apos;s page</CardTitle></CardHeader><CardContent><p className="text-muted-foreground">Complete a daily check-in or add a habit to begin building your rhythm.</p></CardContent></Card>
         ) : null}
         <CategorySpectrum scores={categoryScores} />
-        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3" aria-label="Weekly metrics">
+        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Weekly metrics">
           <MetricCard title="Tracked habit completion" value={`${trackedHabitCompletion}%`} helper="Your custom weekly habit targets." tone="routine" icon={Repeat2} />
           <MetricCard title="Check-in habit completion" value={`${metrics.sevenDayHabitCompletion}%`} helper="Workout, yoga, meditation, walking, and study." tone="recovery" icon={ListChecks} />
           <MetricCard title="Schedule adherence" value={`${scheduleAdherence}%`} helper="Completed planned blocks from the last seven days." tone="routine" icon={CalendarCheck2} />
@@ -82,4 +84,12 @@ export default async function DashboardPage() {
       </div>
     </AppShell>
   );
+}
+
+function formatDashboardDate(date: string): string {
+  return new Intl.DateTimeFormat("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric"
+  }).format(new Date(`${date}T12:00:00`));
 }

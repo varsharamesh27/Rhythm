@@ -17,8 +17,8 @@ export default async function SettingsPage() {
     <AppShell>
       <div className="grid gap-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-normal">Settings</h1>
-          <p className="mt-2 max-w-2xl text-zinc-600 dark:text-zinc-300">Set the name and timezone used across your personal workspace.</p>
+          <h1 className="font-display text-4xl font-semibold">Settings</h1>
+          <p className="mt-2 max-w-2xl text-muted-foreground">Set the name and timezone used across your personal workspace.</p>
         </div>
         <Card className="max-w-xl">
           <CardHeader><CardTitle>Profile</CardTitle></CardHeader>

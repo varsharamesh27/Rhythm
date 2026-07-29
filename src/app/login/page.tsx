@@ -1,6 +1,6 @@
+import { ArrowRight, AudioWaveform, LockKeyhole } from "lucide-react";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -17,55 +17,67 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
   const databaseSetupRequired = isDatabaseSetupRequired();
 
   return (
-    <main className="grid min-h-screen place-items-center px-4 py-10 text-zinc-950 dark:text-zinc-50">
+    <main className="grid min-h-screen place-items-center bg-background px-4 py-16 text-foreground">
       <div className="absolute right-4 top-4">
         <ThemeToggle compact />
       </div>
-      <Card className="w-full max-w-md border-t-4 border-t-rose-500 dark:border-t-teal-400">
-        <CardHeader>
-          <div className="mb-2 flex items-center gap-2" aria-hidden="true">
-            <span className="h-2 w-8 rounded-sm bg-rose-500" />
-            <span className="h-2 w-5 rounded-sm bg-amber-400" />
-            <span className="h-2 w-11 rounded-sm bg-teal-500" />
-            <span className="h-2 w-4 rounded-sm bg-violet-500" />
+      <section className="grid w-full max-w-4xl overflow-hidden rounded-md border border-border bg-card shadow-[0_18px_60px_rgba(15,23,42,0.08)] dark:shadow-none md:grid-cols-[0.8fr_1.2fr]">
+        <aside className="hidden min-h-[570px] flex-col justify-between bg-foreground p-10 text-background md:flex">
+          <div className="flex items-center gap-3">
+            <span className="grid size-11 place-items-center rounded-sm border border-background/30">
+              <AudioWaveform size={22} />
+            </span>
+            <span className="font-display text-2xl font-bold">Rhythm</span>
           </div>
-          <p className="text-sm font-semibold uppercase text-teal-700 dark:text-teal-300">Personal rhythm</p>
-          <CardTitle className="text-2xl">
-            {databaseSetupRequired ? "Finish private database setup" : "Sign in to rhythm"}
-          </CardTitle>
-          <p className="text-sm text-zinc-600 dark:text-zinc-300">
+          <div className="max-w-xs border-t border-background/25 pt-7">
+            <p className="font-display text-3xl leading-tight">Small steps, kept faithfully.</p>
+            <p className="mt-4 text-sm text-background/65">Your personal ledger begins with today.</p>
+          </div>
+        </aside>
+        <div className="p-6 sm:p-10">
+          <div className="mb-8 flex items-center gap-3 md:hidden">
+            <span className="grid size-10 place-items-center rounded-sm bg-foreground text-background">
+              <AudioWaveform size={20} />
+            </span>
+            <span className="font-display text-xl font-bold">Rhythm</span>
+          </div>
+          <p className="mb-2 text-sm font-medium text-muted-foreground">Private personal ledger</p>
+          <h1 className="font-display text-3xl font-semibold">
+            {databaseSetupRequired ? "Finish database setup" : "Sign in to rhythm"}
+          </h1>
+          <p className="mt-3 text-sm leading-6 text-muted-foreground">
             {databaseSetupRequired
-              ? "Production tracking is paused until durable private storage is connected."
+              ? "Tracking stays paused until durable private storage is connected."
               : demoMode
-                ? "Use the clean local demo workspace while you set up your database."
-                : "A secure magic link opens your own private tracking workspace."}
+                ? "Use a clean local ledger while you connect your database."
+                : "A secure magic link opens your private workspace."}
           </p>
-        </CardHeader>
-        <CardContent className="grid gap-5">
+          <div className="mt-8 grid gap-6">
           {demoMode ? (
-            <form action={enterDemoWorkspace} className="grid gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-zinc-800">
+            <form action={enterDemoWorkspace} className="grid gap-4 border-y border-border py-5">
               <div>
-                <p className="font-semibold text-zinc-950 dark:text-zinc-50">New here? Try the demo.</p>
-                <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-300">Open an empty workspace, add today&apos;s information, and watch the dashboard update locally.</p>
+                <p className="font-semibold">Start with the local demo</p>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">Nothing is uploaded. Your trial entries stay on this computer.</p>
               </div>
-              <Button type="submit">Try demo workspace</Button>
+              <Button className="justify-between" type="submit">Try demo workspace<ArrowRight size={17} /></Button>
             </form>
           ) : null}
           {databaseSetupRequired ? (
-            <div className="rounded-md border border-amber-300 bg-amber-50 p-4 text-sm text-zinc-800 dark:border-amber-700 dark:bg-zinc-800 dark:text-zinc-100" role="status">
+            <div className="border-l-2 border-[hsl(var(--nutrition))] bg-muted p-4 text-sm text-foreground" role="status">
               No tracking data can be submitted from this deployment yet. Connect Supabase and apply the migrations before opening account registration.
             </div>
           ) : null}
           {supabaseConfigured ? (
             <form action={signInWithEmail} className="grid gap-4">
               <Label>Email address<Input name="email" type="email" autoComplete="email" required placeholder="you@example.com" /></Label>
-              <Button type="submit">Send magic link</Button>
-              <p className="text-sm text-zinc-600 dark:text-zinc-300">New emails create a private workspace. Returning members continue where they left off.</p>
+              <Button className="gap-2" type="submit"><LockKeyhole size={17} />Send magic link</Button>
+              <p className="text-sm leading-6 text-muted-foreground">New emails create a private workspace. Returning members continue where they left off.</p>
             </form>
           ) : null}
-          {params.message ? <p className="rounded-md bg-teal-50 p-3 text-sm text-teal-800 dark:bg-teal-950 dark:text-teal-200">{params.message}</p> : null}
-        </CardContent>
-      </Card>
+          {params.message ? <p className="border-l-2 border-accent bg-muted p-3 text-sm text-foreground">{params.message}</p> : null}
+          </div>
+        </div>
+      </section>
     </main>
   );
 }
