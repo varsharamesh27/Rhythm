@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { hasSupabaseConfiguration } from "@/lib/demo-mode";
+import { getAuthCallbackErrorMessage } from "@/lib/auth-errors";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export async function GET(request: NextRequest) {
@@ -21,7 +22,14 @@ export async function GET(request: NextRequest) {
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.auth.exchangeCodeForSession(code);
   if (error) {
-    return NextResponse.redirect(new URL(`/login?message=${encodeURIComponent(error.message)}`, request.url));
+    console.error("Supabase auth callback failed", {
+      code: error.code,
+      status: error.status,
+      message: error.message
+    });
+    return NextResponse.redirect(
+      new URL(`/login?message=${encodeURIComponent(getAuthCallbackErrorMessage(error))}`, request.url)
+    );
   }
 
   return NextResponse.redirect(new URL(next, request.url));

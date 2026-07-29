@@ -8,6 +8,7 @@ import {
   isDatabaseSetupRequired,
   isDemoMode
 } from "@/lib/demo-mode";
+import { getMagicLinkErrorMessage } from "@/lib/auth-errors";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 const emailSchema = z.string().trim().email();
@@ -32,7 +33,12 @@ export async function signInWithEmail(formData: FormData) {
     }
   });
   if (error) {
-    redirect("/login?message=We could not send a sign-in link. Wait a minute and try again.");
+    console.error("Supabase magic-link request failed", {
+      code: error.code,
+      status: error.status,
+      message: error.message
+    });
+    redirect(`/login?message=${encodeURIComponent(getMagicLinkErrorMessage(error))}`);
   }
   redirect("/login?message=Check your email for a secure sign-in link.");
 }

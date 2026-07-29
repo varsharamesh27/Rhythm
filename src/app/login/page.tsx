@@ -71,7 +71,9 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
             <form action={signInWithEmail} className="grid gap-4">
               <Label>Email address<Input name="email" type="email" autoComplete="email" required placeholder="you@example.com" /></Label>
               <Button className="gap-2" type="submit"><LockKeyhole size={17} />Send magic link</Button>
-              <p className="text-sm leading-6 text-muted-foreground">New emails create a private workspace. Returning members continue where they left off.</p>
+              <p className="text-sm leading-6 text-muted-foreground">
+                Request one link, then open the newest email in this same browser. New emails create a private workspace.
+              </p>
             </form>
           ) : null}
           {params.message ? <p className="border-l-2 border-accent bg-muted p-3 text-sm text-foreground">{params.message}</p> : null}
