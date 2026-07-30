@@ -10,10 +10,45 @@ import {
 } from "@/lib/demo-mode";
 import {
   getOtpRequestErrorMessage,
-  getOtpVerificationErrorMessage
+  getOtpVerificationErrorMessage,
+  getPasswordSignInErrorMessage
 } from "@/lib/auth-errors";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { authEmailSchema, emailOtpSchema } from "@/lib/validations/auth";
+import {
+  authEmailSchema,
+  emailOtpSchema,
+  passwordSignInSchema
+} from "@/lib/validations/auth";
+
+export async function signInWithPassword(formData: FormData) {
+  if (!hasSupabaseConfiguration()) {
+    redirect("/login?message=Connect Supabase before using production tracking.");
+  }
+
+  const parsed = passwordSignInSchema.safeParse({
+    email: formData.get("email"),
+    password: formData.get("password")
+  });
+  if (!parsed.success) {
+    redirect(`/login?message=${encodeURIComponent(parsed.error.issues[0]?.message ?? "Enter a valid email and password.")}`);
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.auth.signInWithPassword({
+    email: parsed.data.email.toLowerCase(),
+    password: parsed.data.password
+  });
+  if (error) {
+    console.error("Supabase password sign-in failed", {
+      code: error.code,
+      status: error.status,
+      message: error.message
+    });
+    redirect(`/login?message=${encodeURIComponent(getPasswordSignInErrorMessage(error))}`);
+  }
+
+  redirect("/dashboard");
+}
 
 export async function signInWithEmail(formData: FormData) {
   if (isDemoMode()) redirect("/dashboard?message=demo-mode");

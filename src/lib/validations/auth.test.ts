@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { authEmailSchema, emailOtpSchema } from "./auth";
+import { authEmailSchema, emailOtpSchema, passwordSignInSchema } from "./auth";
 
 describe("email OTP validation", () => {
   it("normalizes valid email addresses", () => {
@@ -14,5 +14,20 @@ describe("email OTP validation", () => {
   it("rejects short or nonnumeric codes", () => {
     expect(emailOtpSchema.safeParse("12345").success).toBe(false);
     expect(emailOtpSchema.safeParse("12A456").success).toBe(false);
+  });
+
+  it("requires a valid email and an eight-character password", () => {
+    expect(
+      passwordSignInSchema.safeParse({
+        email: "person@example.com",
+        password: "private-password"
+      }).success
+    ).toBe(true);
+    expect(
+      passwordSignInSchema.safeParse({
+        email: "not-an-email",
+        password: "short"
+      }).success
+    ).toBe(false);
   });
 });

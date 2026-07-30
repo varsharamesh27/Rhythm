@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight, AudioWaveform, KeyRound, Mail, RotateCcw } from "lucide-react";
+import { ArrowLeft, ArrowRight, AudioWaveform, KeyRound, LockKeyhole, Mail, RotateCcw } from "lucide-react";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
@@ -15,16 +15,18 @@ import {
   enterDemoWorkspace,
   resendEmailCode,
   signInWithEmail,
+  signInWithPassword,
   verifyEmailCode
 } from "./sign-in";
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ message?: string; step?: string }> }) {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ message?: string; method?: string; step?: string }> }) {
   const params = await searchParams;
   const demoMode = isDemoMode();
   const supabaseConfigured = hasSupabaseConfiguration();
   const databaseSetupRequired = isDatabaseSetupRequired();
   const pendingEmail = (await cookies()).get(PENDING_EMAIL_COOKIE)?.value;
   const isVerificationStep = params.step === "verify" && Boolean(pendingEmail);
+  const isCodeMethod = params.method === "code" || isVerificationStep;
 
   return (
     <main className="grid min-h-screen place-items-center bg-background px-4 py-16 text-foreground">
@@ -62,7 +64,9 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
                 ? "Use a clean local ledger while you connect your database."
                 : isVerificationStep
                   ? "Enter the temporary code from your newest email."
-                  : "Receive a temporary email code to open your private workspace."}
+                  : isCodeMethod
+                    ? "Receive a temporary email code to open your private workspace."
+                    : "Use the confirmed private account created in Supabase."}
           </p>
           <div className="mt-8 grid gap-6">
           {demoMode ? (
@@ -79,13 +83,39 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
               No tracking data can be submitted from this deployment yet. Connect Supabase and apply the migrations before opening account registration.
             </div>
           ) : null}
-          {supabaseConfigured && !isVerificationStep ? (
+          {supabaseConfigured && !isCodeMethod ? (
+            <div className="grid gap-5">
+              <form action={signInWithPassword} className="grid gap-4">
+                <Label>Email address<Input name="email" type="email" autoComplete="email" required placeholder="you@example.com" /></Label>
+                <Label>Password<Input name="password" type="password" autoComplete="current-password" minLength={8} required /></Label>
+                <Button className="gap-2" type="submit"><LockKeyhole size={17} />Sign in with password</Button>
+              </form>
+              <div className="border-t border-border pt-5">
+                <Link
+                  className="inline-flex min-h-10 items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  href="/login?method=code"
+                >
+                  <Mail size={16} />Use an email code instead
+                </Link>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  Email codes require a custom mail provider on new free Supabase projects.
+                </p>
+              </div>
+            </div>
+          ) : null}
+          {supabaseConfigured && isCodeMethod && !isVerificationStep ? (
             <form action={signInWithEmail} className="grid gap-4">
               <Label>Email address<Input name="email" type="email" autoComplete="email" required placeholder="you@example.com" /></Label>
               <Button className="gap-2" type="submit"><Mail size={17} />Send sign-in code</Button>
               <p className="text-sm leading-6 text-muted-foreground">
                 New email addresses create their own private workspace. Codes are temporary and can be used only once.
               </p>
+              <Link
+                className="inline-flex min-h-10 items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                href="/login"
+              >
+                <ArrowLeft size={16} />Use password instead
+              </Link>
             </form>
           ) : null}
           {supabaseConfigured && isVerificationStep ? (
@@ -114,7 +144,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
                 </form>
                 <Link
                   className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-                  href="/login"
+                  href="/login?method=code"
                 >
                   <ArrowLeft size={16} />Use another email
                 </Link>

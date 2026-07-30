@@ -43,6 +43,31 @@ export function getOtpVerificationErrorMessage(error: AuthErrorLike): string {
   return "We could not verify that code. Please request a new one and try again.";
 }
 
+export function getPasswordSignInErrorMessage(error: AuthErrorLike): string {
+  const details = `${error.code ?? ""} ${error.message ?? ""}`.toLowerCase();
+
+  if (
+    error.status === 429 ||
+    details.includes("rate limit") ||
+    details.includes("rate_limit")
+  ) {
+    return "Too many sign-in attempts were made. Wait a few minutes and try again.";
+  }
+
+  if (details.includes("email not confirmed")) {
+    return "This account is not confirmed yet. Confirm it from Supabase Users before signing in.";
+  }
+
+  if (
+    details.includes("invalid login credentials") ||
+    details.includes("invalid_credentials")
+  ) {
+    return "The email or password is incorrect.";
+  }
+
+  return "We could not sign in to this account. Please wait a minute and try again.";
+}
+
 export function getAuthCallbackErrorMessage(error: AuthErrorLike): string {
   const details = `${error.code ?? ""} ${error.message ?? ""}`.toLowerCase();
 
