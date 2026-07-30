@@ -11,8 +11,8 @@ No AI model is integrated yet. Current insights are deterministic summaries from
 - Today daily check-in with Zod validation and Supabase persistence
 - Dashboard reading check-ins, custom habits, and schedule entries
 - Habits page to create habits, mark today complete, and pause habits
-- Schedule page to create planned blocks and save actual completion
-- Personal routine preset that adds the daily routine without duplicating existing blocks
+- Schedule page with a reusable ideal schedule and separate dated planned-versus-actual entries
+- Personal routine starter that fills missing ideal blocks without replacing custom blocks
 - Weekly Menu for Monday-through-Sunday meal planning and planned-versus-actual calories
 - Health page with recent body signals and Recharts trends
 - Insights page with non-AI summaries, goals, and weekly reviews
@@ -76,6 +76,7 @@ Playwright starts the application in local demo mode, resets the disposable loca
 - Database access is isolated in `src/lib/db`; UI components call typed functions or server actions, not Supabase directly.
 - Next.js server components and server actions are the application backend. `src/lib/supabase/server.ts` creates the cookie-aware Supabase client used by that backend.
 - Supabase Auth owns accounts and sessions. Supabase PostgreSQL is the durable data store; records are associated with the authenticated user's UUID.
+- `schedule_templates` stores each user's editable ideal routine. Copying relevant every-day or weekday blocks creates dated `schedule_entries`; recording actual times never changes the ideal template or past days.
 - Zod schemas live in `src/lib/validations` and validate server action input.
 - Calculation utilities live in `src/lib/metrics` so they can be unit tested without React or Supabase.
 - Weight is shown as one health trend, not as the primary success measure. Routine, recovery, movement, nutrition, and career progress stay separate.
