@@ -51,7 +51,7 @@ Apply migrations in Supabase SQL editor or with the Supabase CLI:
 supabase db push
 ```
 
-Run migrations in filename order. `001_initial_schema.sql` creates the profile, habit, check-in, health, schedule, goal, and review tables. `002_weekly_menu.sql` adds `weekly_menu_items` and its meal-slot enum. `003_security_hardening.sql` enforces same-user habit logs and adds indexes for user-scoped dashboard queries.
+Run migrations in filename order. `001_initial_schema.sql` creates the profile, habit, check-in, health, schedule, goal, and review tables. `002_weekly_menu.sql` adds `weekly_menu_items` and its meal-slot enum. `003_security_hardening.sql` enforces same-user habit logs and adds indexes for user-scoped dashboard queries. `004_multi_item_weekly_menu.sql` allows multiple food items per meal and adds quantity, unit, and per-unit calorie fields.
 
 Every user-owned table has RLS policies using `auth.uid()`, so users can manage only their own records. A trigger creates a `public.users` profile when a Supabase auth user is created.
 
@@ -89,7 +89,7 @@ For a public, multi-user release, the recommended pairing is **Vercel + Supabase
 ### Supabase
 
 1. Create a Supabase project and keep its database password in a password manager.
-2. Open the Supabase SQL editor and run `supabase/migrations/001_initial_schema.sql`, `002_weekly_menu.sql`, and `003_security_hardening.sql` in that order.
+2. Open the Supabase SQL editor and run every file in `supabase/migrations` in filename order, from `001_initial_schema.sql` through `004_multi_item_weekly_menu.sql`.
 3. In Supabase project settings, copy the project URL and publishable/anon key.
 4. Add these variables to the chosen host's production environment:
 

@@ -121,6 +121,10 @@ export type WeeklyMenuItem = DbRecord & {
   meal_date: string;
   meal_slot: MealSlot;
   meal_name: string;
+  planned_quantity: number;
+  actual_quantity: number | null;
+  unit: string;
+  calories_per_unit: number;
   planned_calories: number;
   actual_calories: number | null;
   created_at: string;
@@ -135,6 +139,7 @@ export type ScheduleTemplateInsert = Omit<ScheduleTemplate, "id" | "created_at">
 export type GoalInsert = Omit<Goal, "id" | "created_at" | "status"> & Partial<Pick<Goal, "status">>;
 export type WeeklyReviewInsert = Omit<WeeklyReview, "id" | "created_at">;
 export type WeeklyMenuItemInsert = Omit<WeeklyMenuItem, "id" | "created_at" | "updated_at">;
+export type WeeklyMenuItemUpsert = Omit<WeeklyMenuItem, "created_at" | "updated_at">;
 
 export type Database = {
   public: {

@@ -13,7 +13,7 @@ import type {
   ScheduleTemplate,
   UserProfile,
   WeeklyMenuItem,
-  WeeklyMenuItemInsert,
+  WeeklyMenuItemUpsert,
   WeeklyReview
 } from "@/types/database";
 
@@ -258,24 +258,27 @@ export function listDemoWeeklyMenuItems(startDate: string, endDate: string): Wee
     .sort((a, b) => a.meal_date.localeCompare(b.meal_date) || a.meal_slot.localeCompare(b.meal_slot));
 }
 
-export function upsertDemoWeeklyMenuItems(items: WeeklyMenuItemInsert[]): void {
+export function replaceDemoWeeklyMenuItems(
+  weekStart: string,
+  weekEnd: string,
+  items: WeeklyMenuItemUpsert[]
+): void {
   const state = readDemoState();
   const now = new Date().toISOString();
+  const existingById = new Map(state.weeklyMenuItems.map((item) => [item.id, item]));
 
-  for (const input of items) {
-    const index = state.weeklyMenuItems.findIndex(
-      (item) => item.meal_date === input.meal_date && item.meal_slot === input.meal_slot
-    );
-    const existing = index >= 0 ? state.weeklyMenuItems[index] : null;
-    const row: WeeklyMenuItem = {
-      id: existing?.id ?? newId(),
+  const replacement = items.map((input): WeeklyMenuItem => {
+    const existing = existingById.get(input.id);
+    return {
       ...input,
       created_at: existing?.created_at ?? now,
       updated_at: now
     };
-    if (index >= 0) state.weeklyMenuItems[index] = row;
-    else state.weeklyMenuItems.push(row);
-  }
+  });
+
+  state.weeklyMenuItems = state.weeklyMenuItems
+    .filter((item) => item.meal_date < weekStart || item.meal_date > weekEnd)
+    .concat(replacement);
   writeDemoState(state);
 }
 
