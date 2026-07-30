@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { summarizeWeeklyCalories } from "./calories";
+import { calculateItemCalories, summarizeWeeklyCalories } from "./calories";
 import type { WeeklyMenuItem } from "@/types/database";
 
 function item(overrides: Partial<WeeklyMenuItem>): WeeklyMenuItem {
@@ -9,6 +9,10 @@ function item(overrides: Partial<WeeklyMenuItem>): WeeklyMenuItem {
     meal_date: "2026-07-27",
     meal_slot: "breakfast",
     meal_name: "Oats",
+    planned_quantity: 1,
+    actual_quantity: null,
+    unit: "bowl",
+    calories_per_unit: 350,
     planned_calories: 350,
     actual_calories: null,
     created_at: "2026-07-27T12:00:00.000Z",
@@ -18,18 +22,30 @@ function item(overrides: Partial<WeeklyMenuItem>): WeeklyMenuItem {
 }
 
 describe("summarizeWeeklyCalories", () => {
-  it("keeps planned and actual calories separate", () => {
+  it("keeps planned and actual calories separate while counting meals once", () => {
     const summary = summarizeWeeklyCalories([
       item({ actual_calories: 370 }),
-      item({ meal_date: "2026-07-28", meal_slot: "lunch", planned_calories: 600, actual_calories: 640 })
+      item({
+        meal_name: "Berries",
+        planned_calories: 50,
+        actual_calories: 60
+      }),
+      item({
+        meal_date: "2026-07-28",
+        meal_slot: "lunch",
+        planned_calories: 600,
+        actual_calories: 640
+      })
     ]);
 
     expect(summary).toEqual({
-      plannedCalories: 950,
-      actualCalories: 1010,
+      plannedCalories: 1000,
+      actualCalories: 1070,
       plannedMeals: 2,
       recordedMeals: 2,
-      plannedDays: 2
+      plannedDays: 2,
+      plannedItems: 3,
+      recordedItems: 3
     });
   });
 
@@ -42,5 +58,10 @@ describe("summarizeWeeklyCalories", () => {
     expect(summary.plannedMeals).toBe(1);
     expect(summary.recordedMeals).toBe(0);
     expect(summary.plannedDays).toBe(1);
+  });
+
+  it("calculates fractional quantities and rounds to a whole calorie", () => {
+    expect(calculateItemCalories(0.75, 141)).toBe(106);
+    expect(calculateItemCalories(3, 58)).toBe(174);
   });
 });

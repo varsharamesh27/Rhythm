@@ -7,9 +7,3 @@ export const MEAL_SLOTS: ReadonlyArray<{ value: MealSlot; label: string }> = [
   { value: "evening", label: "Evening" },
   { value: "dinner", label: "Dinner" }
 ];
-
-export type WeeklyMenuField = "mealName" | "plannedCalories" | "actualCalories";
-
-export function weeklyMenuFieldName(date: string, slot: MealSlot, field: WeeklyMenuField): string {
-  return `${field}:${date}:${slot}`;
-}
