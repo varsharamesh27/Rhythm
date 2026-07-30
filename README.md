@@ -117,7 +117,9 @@ Redirect URL: https://your-production-domain.example/auth/callback
 
 Set the subject to `Your Rhythm sign-in code`. Supabase sends a numeric OTP when this template uses `{{ .Token }}`; using `{{ .ConfirmationURL }}` sends a magic link instead.
 
-7. Configure custom SMTP before inviting many people. Supabase's default mail sender is intended for initial testing and has a low rate limit.
+New Supabase free-tier projects using the default email provider may have template editing disabled. In that case, configure custom SMTP before this step; the application cannot change the hosted email template through the publishable key.
+
+7. Configure custom SMTP before inviting many people. Supabase's default mail sender is intended for initial testing, is limited to project-team addresses, and has a very low rate limit.
 8. Configure Auth rate limits and CAPTCHA, require MFA for project administrators, and enable SSL enforcement.
 9. Deploy and create two test accounts. Confirm that each account can see only its own records.
 
