@@ -3,8 +3,23 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getCurrentUserId } from "@/lib/db/auth";
-import { addRoutinePresetToSchedule, createScheduleEntry, updateScheduleActual } from "@/lib/db/schedule";
-import { scheduleActualSchema, scheduleDateSchema, scheduleEntrySchema } from "@/lib/validations/schedule";
+import {
+  addIdealScheduleToDay,
+  addStarterRoutineToTemplates,
+  createScheduleEntry,
+  createScheduleTemplate,
+  deleteScheduleTemplate,
+  updateScheduleActual,
+  updateScheduleTemplate
+} from "@/lib/db/schedule";
+import {
+  scheduleActualSchema,
+  scheduleDateSchema,
+  scheduleEntrySchema,
+  scheduleTemplateIdSchema,
+  scheduleTemplateSchema,
+  scheduleTemplateUpdateSchema
+} from "@/lib/validations/schedule";
 
 export async function createScheduleEntryAction(formData: FormData): Promise<void> {
   const userId = await getCurrentUserId();
@@ -43,13 +58,60 @@ export async function updateScheduleActualAction(formData: FormData): Promise<vo
   revalidatePath("/dashboard");
 }
 
-export async function applyRoutinePresetAction(formData: FormData): Promise<void> {
+export async function applyIdealScheduleAction(formData: FormData): Promise<void> {
   const userId = await getCurrentUserId();
   if (!userId) redirect("/login");
   const parsedDate = scheduleDateSchema.safeParse(formData.get("entryDate"));
   if (!parsedDate.success) throw new Error(parsedDate.error.issues[0]?.message ?? "Schedule date is invalid");
 
-  await addRoutinePresetToSchedule(userId, parsedDate.data);
+  await addIdealScheduleToDay(userId, parsedDate.data);
   revalidatePath("/schedule");
   revalidatePath("/dashboard");
+}
+
+export async function addStarterRoutineAction(): Promise<void> {
+  const userId = await getCurrentUserId();
+  if (!userId) redirect("/login");
+  await addStarterRoutineToTemplates(userId);
+  revalidatePath("/schedule");
+}
+
+export async function createScheduleTemplateAction(formData: FormData): Promise<void> {
+  const userId = await getCurrentUserId();
+  if (!userId) redirect("/login");
+  const parsed = scheduleTemplateSchema.safeParse(templateFormValues(formData));
+  if (!parsed.success) throw new Error(parsed.error.issues[0]?.message ?? "Ideal schedule block is invalid");
+  await createScheduleTemplate(userId, parsed.data);
+  revalidatePath("/schedule");
+}
+
+export async function updateScheduleTemplateAction(formData: FormData): Promise<void> {
+  const userId = await getCurrentUserId();
+  if (!userId) redirect("/login");
+  const parsed = scheduleTemplateUpdateSchema.safeParse({
+    ...templateFormValues(formData),
+    templateId: formData.get("templateId")
+  });
+  if (!parsed.success) throw new Error(parsed.error.issues[0]?.message ?? "Ideal schedule block is invalid");
+  await updateScheduleTemplate(userId, parsed.data);
+  revalidatePath("/schedule");
+}
+
+export async function deleteScheduleTemplateAction(formData: FormData): Promise<void> {
+  const userId = await getCurrentUserId();
+  if (!userId) redirect("/login");
+  const parsedId = scheduleTemplateIdSchema.safeParse(formData.get("templateId"));
+  if (!parsedId.success) throw new Error("Ideal schedule block is invalid");
+  await deleteScheduleTemplate(userId, parsedId.data);
+  revalidatePath("/schedule");
+}
+
+function templateFormValues(formData: FormData) {
+  return {
+    name: formData.get("name"),
+    startTime: formData.get("startTime"),
+    endTime: formData.get("endTime"),
+    category: formData.get("category"),
+    weekday: formData.get("weekday")
+  };
 }

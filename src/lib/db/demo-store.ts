@@ -10,6 +10,7 @@ import type {
   HabitCategory,
   HabitLog,
   ScheduleEntry,
+  ScheduleTemplate,
   UserProfile,
   WeeklyMenuItem,
   WeeklyMenuItemInsert,
@@ -21,6 +22,7 @@ type DemoState = {
   habits: Habit[];
   habitLogs: HabitLog[];
   checkins: DailyCheckin[];
+  scheduleTemplates: ScheduleTemplate[];
   scheduleEntries: ScheduleEntry[];
   weeklyMenuItems: WeeklyMenuItem[];
   goals: Goal[];
@@ -36,7 +38,11 @@ export function readDemoState(): DemoState {
     return seeded;
   }
   const state = JSON.parse(readFileSync(STORE_PATH, "utf8")) as DemoState;
-  return { ...state, weeklyMenuItems: state.weeklyMenuItems ?? [] };
+  return {
+    ...state,
+    scheduleTemplates: state.scheduleTemplates ?? [],
+    weeklyMenuItems: state.weeklyMenuItems ?? []
+  };
 }
 
 export function writeDemoState(state: DemoState): void {
@@ -128,6 +134,84 @@ export function setDemoHabitLog(input: { habitId: string; logDate: string; compl
 
 export function listDemoScheduleEntries(date: string): ScheduleEntry[] {
   return readDemoState().scheduleEntries.filter((entry) => entry.entry_date === date).sort((a, b) => a.planned_start.localeCompare(b.planned_start));
+}
+
+export function listDemoScheduleTemplates(): ScheduleTemplate[] {
+  return readDemoState().scheduleTemplates.sort((a, b) => a.start_time.localeCompare(b.start_time));
+}
+
+export function createDemoScheduleTemplate(input: {
+  name: string;
+  weekday: number | null;
+  startTime: string;
+  endTime: string;
+  category: HabitCategory;
+}): void {
+  const state = readDemoState();
+  state.scheduleTemplates.push({
+    id: newId(),
+    user_id: DEMO_USER_ID,
+    name: input.name,
+    weekday: input.weekday,
+    start_time: input.startTime,
+    end_time: input.endTime,
+    category: input.category,
+    created_at: new Date().toISOString()
+  });
+  writeDemoState(state);
+}
+
+export function updateDemoScheduleTemplate(input: {
+  templateId: string;
+  name: string;
+  weekday: number | null;
+  startTime: string;
+  endTime: string;
+  category: HabitCategory;
+}): void {
+  const state = readDemoState();
+  state.scheduleTemplates = state.scheduleTemplates.map((template) =>
+    template.id === input.templateId
+      ? {
+          ...template,
+          name: input.name,
+          weekday: input.weekday,
+          start_time: input.startTime,
+          end_time: input.endTime,
+          category: input.category
+        }
+      : template
+  );
+  writeDemoState(state);
+}
+
+export function deleteDemoScheduleTemplate(templateId: string): void {
+  const state = readDemoState();
+  state.scheduleTemplates = state.scheduleTemplates.filter((template) => template.id !== templateId);
+  writeDemoState(state);
+}
+
+export function addDemoStarterScheduleTemplates(blocks: ReadonlyArray<RoutineBlock>): void {
+  const state = readDemoState();
+  const existing = new Set(
+    state.scheduleTemplates.map((template) => `${template.start_time.slice(0, 5)}:${template.name}`)
+  );
+
+  for (const block of blocks) {
+    const key = `${block.plannedStart}:${block.title}`;
+    if (existing.has(key)) continue;
+    state.scheduleTemplates.push({
+      id: newId(),
+      user_id: DEMO_USER_ID,
+      name: block.title,
+      weekday: null,
+      start_time: block.plannedStart,
+      end_time: block.plannedEnd,
+      category: block.category,
+      created_at: new Date().toISOString()
+    });
+  }
+  writeDemoState(state);
 }
 
 export function listRecentDemoScheduleEntries(startDate: string, endDate: string): ScheduleEntry[] {
@@ -274,6 +358,7 @@ function createSeedState(): DemoState {
     habits: [],
     habitLogs: [],
     checkins: [],
+    scheduleTemplates: [],
     scheduleEntries: [],
     weeklyMenuItems: [],
     goals: [],

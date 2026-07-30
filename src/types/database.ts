@@ -74,6 +74,17 @@ export type ScheduleEntry = DbRecord & {
   created_at: string;
 };
 
+export type ScheduleTemplate = DbRecord & {
+  id: string;
+  user_id: string;
+  name: string;
+  weekday: number | null;
+  start_time: string;
+  end_time: string;
+  category: HabitCategory;
+  created_at: string;
+};
+
 export type Goal = DbRecord & {
   id: string;
   user_id: string;
@@ -113,6 +124,7 @@ export type DailyCheckinInsert = Omit<DailyCheckin, "id" | "created_at" | "updat
 export type HabitInsert = Omit<Habit, "id" | "created_at">;
 export type HabitLogInsert = Omit<HabitLog, "id" | "created_at">;
 export type ScheduleEntryInsert = Omit<ScheduleEntry, "id" | "created_at" | "actual_start" | "actual_end" | "completed"> & Partial<Pick<ScheduleEntry, "actual_start" | "actual_end" | "completed">>;
+export type ScheduleTemplateInsert = Omit<ScheduleTemplate, "id" | "created_at">;
 export type GoalInsert = Omit<Goal, "id" | "created_at" | "status"> & Partial<Pick<Goal, "status">>;
 export type WeeklyReviewInsert = Omit<WeeklyReview, "id" | "created_at">;
 export type WeeklyMenuItemInsert = Omit<WeeklyMenuItem, "id" | "created_at" | "updated_at">;
@@ -124,6 +136,7 @@ export type Database = {
       habits: Table<Habit, HabitInsert, Partial<Habit>>;
       habit_logs: Table<HabitLog, HabitLogInsert, Partial<HabitLog>>;
       daily_checkins: Table<DailyCheckin, DailyCheckinInsert, Partial<DailyCheckin>>;
+      schedule_templates: Table<ScheduleTemplate, ScheduleTemplateInsert, Partial<ScheduleTemplate>>;
       schedule_entries: Table<ScheduleEntry, ScheduleEntryInsert, Partial<ScheduleEntry>>;
       goals: Table<Goal, GoalInsert, Partial<Goal>>;
       weekly_reviews: Table<WeeklyReview, WeeklyReviewInsert, Partial<WeeklyReview>>;
