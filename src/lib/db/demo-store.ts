@@ -1,7 +1,6 @@
 import { existsSync, readFileSync, writeFileSync } from "fs";
-import { join } from "path";
+import { join, resolve } from "path";
 import { DEMO_USER_ID } from "@/lib/demo-mode";
-import type { RoutineBlock } from "@/lib/routine-preset";
 import type {
   DailyCheckin,
   DailyCheckinInsert,
@@ -9,6 +8,7 @@ import type {
   Habit,
   HabitCategory,
   HabitLog,
+  ScheduleBlockInput,
   ScheduleEntry,
   ScheduleTemplate,
   UserProfile,
@@ -29,7 +29,9 @@ type DemoState = {
   weeklyReviews: WeeklyReview[];
 };
 
-const STORE_PATH = join(process.cwd(), ".demo-data.json");
+const STORE_PATH = process.env.RHYTHM_DEMO_DATA_PATH
+  ? resolve(process.cwd(), process.env.RHYTHM_DEMO_DATA_PATH)
+  : join(process.cwd(), ".demo-data.json");
 
 export function readDemoState(): DemoState {
   if (!existsSync(STORE_PATH)) {
@@ -191,29 +193,6 @@ export function deleteDemoScheduleTemplate(templateId: string): void {
   writeDemoState(state);
 }
 
-export function addDemoStarterScheduleTemplates(blocks: ReadonlyArray<RoutineBlock>): void {
-  const state = readDemoState();
-  const existing = new Set(
-    state.scheduleTemplates.map((template) => `${template.start_time.slice(0, 5)}:${template.name}`)
-  );
-
-  for (const block of blocks) {
-    const key = `${block.plannedStart}:${block.title}`;
-    if (existing.has(key)) continue;
-    state.scheduleTemplates.push({
-      id: newId(),
-      user_id: DEMO_USER_ID,
-      name: block.title,
-      weekday: null,
-      start_time: block.plannedStart,
-      end_time: block.plannedEnd,
-      category: block.category,
-      created_at: new Date().toISOString()
-    });
-  }
-  writeDemoState(state);
-}
-
 export function listRecentDemoScheduleEntries(startDate: string, endDate: string): ScheduleEntry[] {
   return readDemoState().scheduleEntries.filter((entry) => entry.entry_date >= startDate && entry.entry_date <= endDate).sort(byDate("entry_date"));
 }
@@ -244,7 +223,7 @@ export function updateDemoScheduleActual(input: { entryId: string; actualStart: 
   writeDemoState(state);
 }
 
-export function addDemoRoutineEntries(date: string, blocks: ReadonlyArray<RoutineBlock>): void {
+export function addDemoRoutineEntries(date: string, blocks: ReadonlyArray<ScheduleBlockInput>): void {
   const state = readDemoState();
   const existing = new Set(
     state.scheduleEntries

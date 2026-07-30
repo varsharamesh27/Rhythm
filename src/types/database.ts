@@ -2,6 +2,13 @@ export type HabitCategory = "routine" | "recovery" | "movement" | "nutrition" | 
 export type GoalStatus = "active" | "paused" | "completed";
 export type MealSlot = "breakfast" | "forenoon" | "lunch" | "evening" | "dinner";
 
+export type ScheduleBlockInput = {
+  title: string;
+  plannedStart: string;
+  plannedEnd: string;
+  category: HabitCategory;
+};
+
 type DbRecord = object;
 
 type Table<Row extends DbRecord, Insert extends DbRecord, Update extends DbRecord> = {

@@ -1,11 +1,9 @@
 import { unstable_noStore as noStore } from "next/cache";
 import { isDemoMode } from "@/lib/demo-mode";
-import { PERSONAL_ROUTINE } from "@/lib/routine-preset";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { HabitCategory, ScheduleEntry, ScheduleTemplate } from "@/types/database";
 import {
   addDemoRoutineEntries,
-  addDemoStarterScheduleTemplates,
   createDemoScheduleEntry,
   createDemoScheduleTemplate,
   deleteDemoScheduleTemplate,
@@ -127,33 +125,6 @@ export async function deleteScheduleTemplate(userId: string, templateId: string)
   if (error) throw new Error(error.message);
 }
 
-export async function addStarterRoutineToTemplates(userId: string): Promise<void> {
-  if (isDemoMode()) {
-    addDemoStarterScheduleTemplates(PERSONAL_ROUTINE);
-    return;
-  }
-
-  const templates = await listScheduleTemplates(userId);
-  const existing = new Set(
-    templates.map((template) => `${template.start_time.slice(0, 5)}:${template.name}`)
-  );
-  const missing = PERSONAL_ROUTINE.filter(
-    (block) => !existing.has(`${block.plannedStart}:${block.title}`)
-  ).map((block) => ({
-    user_id: userId,
-    name: block.title,
-    weekday: null,
-    start_time: block.plannedStart,
-    end_time: block.plannedEnd,
-    category: block.category
-  }));
-
-  if (missing.length === 0) return;
-  const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.from("schedule_templates").insert(missing);
-  if (error) throw new Error(error.message);
-}
-
 export async function createScheduleEntry(input: {
   userId: string;
   entryDate: string;
@@ -237,4 +208,33 @@ export async function addIdealScheduleToDay(userId: string, date: string): Promi
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.from("schedule_entries").insert(missing);
   if (error) throw new Error(error.message);
+}
+
+export async function importLocalIdealSchedule(userId: string): Promise<number> {
+  if (process.env.NODE_ENV === "production" || isDemoMode()) return 0;
+
+  const localTemplates = listDemoScheduleTemplates();
+  const accountTemplates = await listScheduleTemplates(userId);
+  const existing = new Set(
+    accountTemplates.map(
+      (template) => `${template.weekday ?? "daily"}:${template.start_time.slice(0, 5)}:${template.name}`
+    )
+  );
+  const missing = localTemplates.filter(
+    (template) =>
+      !existing.has(`${template.weekday ?? "daily"}:${template.start_time.slice(0, 5)}:${template.name}`)
+  ).map((template) => ({
+    user_id: userId,
+    name: template.name,
+    weekday: template.weekday,
+    start_time: template.start_time.slice(0, 5),
+    end_time: template.end_time.slice(0, 5),
+    category: template.category
+  }));
+
+  if (missing.length === 0) return 0;
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.from("schedule_templates").insert(missing);
+  if (error) throw new Error(error.message);
+  return missing.length;
 }
