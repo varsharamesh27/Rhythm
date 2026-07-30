@@ -1,12 +1,25 @@
 import { describe, expect, it } from "vitest";
 import {
   getAuthCallbackErrorMessage,
-  getMagicLinkErrorMessage
+  getOtpRequestErrorMessage,
+  getOtpVerificationErrorMessage
 } from "@/lib/auth-errors";
 
 describe("authentication error messages", () => {
   it("explains Supabase email rate limits", () => {
-    expect(getMagicLinkErrorMessage({ status: 429 })).toContain("up to one hour");
+    expect(getOtpRequestErrorMessage({ status: 429 })).toContain("up to one hour");
+  });
+
+  it("does not expose unknown OTP request errors", () => {
+    expect(getOtpRequestErrorMessage({ message: "sensitive provider detail" })).toBe(
+      "We could not send a sign-in code. Please wait a minute and try once more."
+    );
+  });
+
+  it("gives a useful message for an invalid email code", () => {
+    expect(getOtpVerificationErrorMessage({ code: "otp_expired" })).toContain(
+      "expired"
+    );
   });
 
   it("explains that PKCE links must return to the same browser", () => {

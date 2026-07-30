@@ -106,9 +106,20 @@ Site URL: https://your-production-domain.example
 Redirect URL: https://your-production-domain.example/auth/callback
 ```
 
-6. Configure custom SMTP before inviting many people. Supabase's default mail sender is intended for initial testing and has a low rate limit.
-7. Configure Auth rate limits and CAPTCHA, require MFA for project administrators, and enable SSL enforcement.
-8. Deploy and create two test accounts. Confirm that each account can see only its own records.
+6. In Supabase Authentication, open **Email Templates**, select **Magic Link**, and replace the template with:
+
+```html
+<h2>Your Rhythm sign-in code</h2>
+<p>Enter this code in Rhythm:</p>
+<p style="font-size: 32px; font-weight: 700; letter-spacing: 6px;">{{ .Token }}</p>
+<p>This code expires soon and can be used only once.</p>
+```
+
+Set the subject to `Your Rhythm sign-in code`. Supabase sends a numeric OTP when this template uses `{{ .Token }}`; using `{{ .ConfirmationURL }}` sends a magic link instead.
+
+7. Configure custom SMTP before inviting many people. Supabase's default mail sender is intended for initial testing and has a low rate limit.
+8. Configure Auth rate limits and CAPTCHA, require MFA for project administrators, and enable SSL enforcement.
+9. Deploy and create two test accounts. Confirm that each account can see only its own records.
 
 The publishable/anon key is designed for client-facing applications, but Rhythm keeps it server-side because no browser component needs direct database access. Never configure a Supabase service-role key in this application. RLS is the data-isolation boundary and must remain enabled for every user-owned table.
 
@@ -129,7 +140,7 @@ Demo data lives only in `.demo-data.json` on the local computer. It is intention
 
 Once real Supabase variables are present, demo mode turns off automatically:
 
-- Login uses a magic link and creates a private workspace for each authenticated user.
+- Login sends a temporary email code and creates a private workspace for each authenticated user.
 - Check-ins, habits, schedules, goals, reviews, and settings are stored in Supabase.
 - Refreshing, restarting, or changing devices does not remove cloud records.
 - RLS restricts every query to the authenticated user's records.
