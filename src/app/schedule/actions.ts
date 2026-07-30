@@ -5,10 +5,10 @@ import { redirect } from "next/navigation";
 import { getCurrentUserId } from "@/lib/db/auth";
 import {
   addIdealScheduleToDay,
-  addStarterRoutineToTemplates,
   createScheduleEntry,
   createScheduleTemplate,
   deleteScheduleTemplate,
+  importLocalIdealSchedule,
   updateScheduleActual,
   updateScheduleTemplate
 } from "@/lib/db/schedule";
@@ -69,10 +69,10 @@ export async function applyIdealScheduleAction(formData: FormData): Promise<void
   revalidatePath("/dashboard");
 }
 
-export async function addStarterRoutineAction(): Promise<void> {
+export async function importLocalIdealScheduleAction(): Promise<void> {
   const userId = await getCurrentUserId();
   if (!userId) redirect("/login");
-  await addStarterRoutineToTemplates(userId);
+  await importLocalIdealSchedule(userId);
   revalidatePath("/schedule");
 }
 

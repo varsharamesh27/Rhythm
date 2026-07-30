@@ -8,18 +8,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { todayIso } from "@/lib/dates";
+import { isDemoMode } from "@/lib/demo-mode";
 import { getCurrentUserId } from "@/lib/db/auth";
 import { listScheduleEntries, listScheduleTemplates } from "@/lib/db/schedule";
 import { calculateScheduleAdherence, plannedMinutes } from "@/lib/metrics/schedule";
-import { PERSONAL_ROUTINE } from "@/lib/routine-preset";
 import { cn } from "@/lib/utils";
 import type { HabitCategory, ScheduleEntry, ScheduleTemplate } from "@/types/database";
 import {
-  addStarterRoutineAction,
   applyIdealScheduleAction,
   createScheduleEntryAction,
   createScheduleTemplateAction,
   deleteScheduleTemplateAction,
+  importLocalIdealScheduleAction,
   updateScheduleActualAction,
   updateScheduleTemplateAction
 } from "./actions";
@@ -64,12 +64,9 @@ export default async function SchedulePage({
   const applicableTemplates = templates.filter(
     (template) => template.weekday === null || template.weekday === weekday
   );
-  const templateKeys = new Set(
-    templates.map((template) => `${template.start_time.slice(0, 5)}:${template.name}`)
-  );
-  const missingStarterBlocks = PERSONAL_ROUTINE.filter(
-    (block) => !templateKeys.has(`${block.plannedStart}:${block.title}`)
-  ).length;
+  const demoMode = isDemoMode();
+  const ownerLabel = demoMode ? "this local demo workspace" : "the signed-in account";
+  const showLocalImport = process.env.NODE_ENV !== "production" && !demoMode;
 
   return (
     <AppShell>
@@ -77,7 +74,7 @@ export default async function SchedulePage({
         <header>
           <h1 className="font-display text-4xl font-semibold">Schedule</h1>
           <p className="mt-2 max-w-2xl text-muted-foreground">
-            Keep the routine you want to follow separate from what each day actually held.
+            Each person builds a private ideal schedule. Their dated plans and actual times stay attached to the same account.
           </p>
         </header>
 
@@ -98,8 +95,9 @@ export default async function SchedulePage({
 
         {view === "ideal" ? (
           <IdealSchedule
+            ownerLabel={ownerLabel}
             templates={templates}
-            missingStarterBlocks={missingStarterBlocks}
+            showLocalImport={showLocalImport}
           />
         ) : (
           <DailySchedule
@@ -107,6 +105,7 @@ export default async function SchedulePage({
             entries={entries}
             idealBlockCount={templates.length}
             applicableBlockCount={applicableTemplates.length}
+            ownerLabel={ownerLabel}
           />
         )}
       </div>
@@ -146,12 +145,14 @@ function DailySchedule({
   date,
   entries,
   idealBlockCount,
-  applicableBlockCount
+  applicableBlockCount,
+  ownerLabel
 }: {
   date: string;
   entries: ScheduleEntry[];
   idealBlockCount: number;
   applicableBlockCount: number;
+  ownerLabel: string;
 }) {
   const adherence = calculateScheduleAdherence(entries);
   const plannedTotal = entries.reduce((total, entry) => total + plannedMinutes(entry), 0);
@@ -224,8 +225,8 @@ function DailySchedule({
             <CardTitle>Ideal schedule</CardTitle>
             <p className="text-sm text-muted-foreground">
               {idealBlockCount === 0
-                ? "No reusable ideal blocks yet."
-                : `${applicableBlockCount} of ${idealBlockCount} ideal blocks apply to this date.`}
+                ? `${capitalize(ownerLabel)} has no reusable ideal blocks yet.`
+                : `${applicableBlockCount} of ${ownerLabel}'s ${idealBlockCount} ideal blocks apply to this date.`}
             </p>
           </CardHeader>
           <CardContent className="grid gap-3">
@@ -272,10 +273,12 @@ function DailySchedule({
 
 function IdealSchedule({
   templates,
-  missingStarterBlocks
+  showLocalImport,
+  ownerLabel
 }: {
   templates: ScheduleTemplate[];
-  missingStarterBlocks: number;
+  showLocalImport: boolean;
+  ownerLabel: string;
 }) {
   const everydayCount = templates.filter((template) => template.weekday === null).length;
 
@@ -285,13 +288,13 @@ function IdealSchedule({
         <CardHeader>
           <CardTitle>Ideal schedule</CardTitle>
           <p className="text-sm text-muted-foreground">
-            {templates.length} reusable blocks - {everydayCount} every day - edit here without changing past daily records
+            {templates.length} blocks owned by {ownerLabel} - {everydayCount} every day - past daily records stay unchanged
           </p>
         </CardHeader>
         <CardContent>
           {templates.length === 0 ? (
             <p className="border-l-2 border-border bg-muted p-4 text-sm text-muted-foreground">
-              Your ideal schedule is empty. Add a block or load the starter routine based on your original plan.
+              {capitalize(ownerLabel)} has no ideal blocks yet. Add this person&apos;s routine; other users keep separate schedules.
             </p>
           ) : (
             <div className="border-y border-border">
@@ -358,7 +361,7 @@ function IdealSchedule({
         <Card>
           <CardHeader>
             <CardTitle>Add ideal block</CardTitle>
-            <p className="text-sm text-muted-foreground">A reusable part of the routine you want to follow.</p>
+            <p className="text-sm text-muted-foreground">Saved only to {ownerLabel}.</p>
           </CardHeader>
           <CardContent>
             <form action={createScheduleTemplateAction} className="grid gap-4" data-testid="add-ideal-block-form">
@@ -384,24 +387,24 @@ function IdealSchedule({
           </CardContent>
         </Card>
 
-        <Card className="border-l-2 border-l-accent">
-          <CardHeader>
-            <CardTitle>Starter routine</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              {missingStarterBlocks === 0
-                ? "All 23 blocks from your original routine are included."
-                : `${missingStarterBlocks} of 23 original routine blocks can be added. Existing ideal blocks stay in place.`}
-            </p>
-          </CardHeader>
-          <CardContent>
-            <form action={addStarterRoutineAction}>
-              <Button className="w-full gap-2" disabled={missingStarterBlocks === 0} type="submit" variant="secondary">
-                <CopyPlus size={17} />
-                Add missing starter blocks
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+        {showLocalImport ? (
+          <Card className="border-l-2 border-l-accent">
+            <CardHeader>
+              <CardTitle>Move local schedule</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Import the ideal blocks from this computer&apos;s demo workspace into this signed-in Supabase account. This option is never shown in production.
+              </p>
+            </CardHeader>
+            <CardContent>
+              <form action={importLocalIdealScheduleAction}>
+                <Button className="w-full gap-2" type="submit" variant="secondary">
+                  <CopyPlus size={17} />
+                  Import my local ideal schedule
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        ) : null}
       </aside>
     </section>
   );
@@ -420,4 +423,8 @@ function weekdayLabel(weekday: number | null): string {
 
 function categoryLabel(category: HabitCategory): string {
   return categories.find((item) => item.value === category)?.label ?? category;
+}
+
+function capitalize(value: string): string {
+  return `${value.charAt(0).toUpperCase()}${value.slice(1)}`;
 }

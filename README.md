@@ -12,7 +12,7 @@ No AI model is integrated yet. Current insights are deterministic summaries from
 - Dashboard reading check-ins, custom habits, and schedule entries
 - Habits page to create habits, mark today complete, and pause habits
 - Schedule page with a reusable ideal schedule and separate dated planned-versus-actual entries
-- Personal routine starter that fills missing ideal blocks without replacing custom blocks
+- Per-user ideal-schedule editing with every-day and weekday-specific blocks
 - Weekly Menu for Monday-through-Sunday meal planning and planned-versus-actual calories
 - Health page with recent body signals and Recharts trends
 - Insights page with non-AI summaries, goals, and weekly reviews
@@ -68,7 +68,7 @@ npm test
 npm run test:e2e
 ```
 
-Playwright starts the application in local demo mode, resets the disposable local store, and covers theme switching, sign-out, daily check-in, weekly menu, and routine workflows. It never writes the local demo data to Supabase.
+Playwright starts a separate application server on port `3100`, resets `.playwright-demo-data.json`, and covers theme switching, sign-out, daily check-in, weekly menu, and routine workflows. Tests never read or write the owner's `.demo-data.json` and never write to Supabase.
 
 ## Architecture decisions
 
@@ -76,7 +76,8 @@ Playwright starts the application in local demo mode, resets the disposable loca
 - Database access is isolated in `src/lib/db`; UI components call typed functions or server actions, not Supabase directly.
 - Next.js server components and server actions are the application backend. `src/lib/supabase/server.ts` creates the cookie-aware Supabase client used by that backend.
 - Supabase Auth owns accounts and sessions. Supabase PostgreSQL is the durable data store; records are associated with the authenticated user's UUID.
-- `schedule_templates` stores each user's editable ideal routine. Copying relevant every-day or weekday blocks creates dated `schedule_entries`; recording actual times never changes the ideal template or past days.
+- `schedule_templates.user_id` stores each account's editable ideal routine. Copying that account's relevant every-day or weekday blocks creates dated `schedule_entries` with the same `user_id`; recording actual times never changes the ideal template or past days.
+- Personal schedules are never seeded globally. A new account begins with no ideal blocks and creates its own. RLS checks `auth.uid()` on both schedule tables, so one account cannot read or modify another account's schedule.
 - Zod schemas live in `src/lib/validations` and validate server action input.
 - Calculation utilities live in `src/lib/metrics` so they can be unit tested without React or Supabase.
 - Weight is shown as one health trend, not as the primary success measure. Routine, recovery, movement, nutrition, and career progress stay separate.
@@ -132,6 +133,8 @@ Once real Supabase variables are present, demo mode turns off automatically:
 - Check-ins, habits, schedules, goals, reviews, and settings are stored in Supabase.
 - Refreshing, restarting, or changing devices does not remove cloud records.
 - RLS restricts every query to the authenticated user's records.
+
+During local development only, an authenticated owner can use **Import my local ideal schedule** to copy templates from `.demo-data.json` into that owner's Supabase account. The import scopes every inserted row to the current authenticated `user_id`, skips duplicates, and is not available in production.
 
 ## Production checklist
 
