@@ -1,20 +1,32 @@
-import { ArrowRight, AudioWaveform, LockKeyhole } from "lucide-react";
+import { ArrowLeft, ArrowRight, AudioWaveform, KeyRound, LockKeyhole, Mail, RotateCcw } from "lucide-react";
+import Link from "next/link";
+import { cookies } from "next/headers";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PENDING_EMAIL_COOKIE } from "@/lib/auth-cookies";
 import {
   hasSupabaseConfiguration,
   isDatabaseSetupRequired,
   isDemoMode
 } from "@/lib/demo-mode";
-import { enterDemoWorkspace, signInWithEmail } from "./sign-in";
+import {
+  enterDemoWorkspace,
+  resendEmailCode,
+  signInWithEmail,
+  signInWithPassword,
+  verifyEmailCode
+} from "./sign-in";
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ message?: string }> }) {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ message?: string; method?: string; step?: string }> }) {
   const params = await searchParams;
   const demoMode = isDemoMode();
   const supabaseConfigured = hasSupabaseConfiguration();
   const databaseSetupRequired = isDatabaseSetupRequired();
+  const pendingEmail = (await cookies()).get(PENDING_EMAIL_COOKIE)?.value;
+  const isVerificationStep = params.step === "verify" && Boolean(pendingEmail);
+  const isCodeMethod = params.method === "code" || isVerificationStep;
 
   return (
     <main className="grid min-h-screen place-items-center bg-background px-4 py-16 text-foreground">
@@ -50,7 +62,11 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
               ? "Tracking stays paused until durable private storage is connected."
               : demoMode
                 ? "Use a clean local ledger while you connect your database."
-                : "A secure magic link opens your private workspace."}
+                : isVerificationStep
+                  ? "Enter the temporary code from your newest email."
+                  : isCodeMethod
+                    ? "Receive a temporary email code to open your private workspace."
+                    : "Use the confirmed private account created in Supabase."}
           </p>
           <div className="mt-8 grid gap-6">
           {demoMode ? (
@@ -67,14 +83,73 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
               No tracking data can be submitted from this deployment yet. Connect Supabase and apply the migrations before opening account registration.
             </div>
           ) : null}
-          {supabaseConfigured ? (
+          {supabaseConfigured && !isCodeMethod ? (
+            <div className="grid gap-5">
+              <form action={signInWithPassword} className="grid gap-4">
+                <Label>Email address<Input name="email" type="email" autoComplete="email" required placeholder="you@example.com" /></Label>
+                <Label>Password<Input name="password" type="password" autoComplete="current-password" minLength={8} required /></Label>
+                <Button className="gap-2" type="submit"><LockKeyhole size={17} />Sign in with password</Button>
+              </form>
+              <div className="border-t border-border pt-5">
+                <Link
+                  className="inline-flex min-h-10 items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  href="/login?method=code"
+                >
+                  <Mail size={16} />Use an email code instead
+                </Link>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  Email codes require a custom mail provider on new free Supabase projects.
+                </p>
+              </div>
+            </div>
+          ) : null}
+          {supabaseConfigured && isCodeMethod && !isVerificationStep ? (
             <form action={signInWithEmail} className="grid gap-4">
               <Label>Email address<Input name="email" type="email" autoComplete="email" required placeholder="you@example.com" /></Label>
-              <Button className="gap-2" type="submit"><LockKeyhole size={17} />Send magic link</Button>
+              <Button className="gap-2" type="submit"><Mail size={17} />Send sign-in code</Button>
               <p className="text-sm leading-6 text-muted-foreground">
-                Request one link, then open the newest email in this same browser. New emails create a private workspace.
+                New email addresses create their own private workspace. Codes are temporary and can be used only once.
               </p>
+              <Link
+                className="inline-flex min-h-10 items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                href="/login"
+              >
+                <ArrowLeft size={16} />Use password instead
+              </Link>
             </form>
+          ) : null}
+          {supabaseConfigured && isVerificationStep ? (
+            <div className="grid gap-5">
+              <form action={verifyEmailCode} className="grid gap-4">
+                <Label>
+                  Email code
+                  <Input
+                    autoComplete="one-time-code"
+                    autoFocus
+                    inputMode="numeric"
+                    maxLength={10}
+                    name="token"
+                    pattern="[0-9]{6,10}"
+                    placeholder="123456"
+                    required
+                  />
+                </Label>
+                <Button className="gap-2" type="submit"><KeyRound size={17} />Verify and sign in</Button>
+              </form>
+              <div className="grid gap-2 border-t border-border pt-5 sm:grid-cols-2">
+                <form action={resendEmailCode}>
+                  <Button className="w-full gap-2" type="submit" variant="secondary">
+                    <RotateCcw size={16} />Send a new code
+                  </Button>
+                </form>
+                <Link
+                  className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  href="/login?method=code"
+                >
+                  <ArrowLeft size={16} />Use another email
+                </Link>
+              </div>
+            </div>
           ) : null}
           {params.message ? <p className="border-l-2 border-accent bg-muted p-3 text-sm text-foreground">{params.message}</p> : null}
           </div>
