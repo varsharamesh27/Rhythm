@@ -9,7 +9,7 @@
         "${workspaceFolder}\\node_modules\\next\\dist\\bin\\next",
         "dev",
         "-H",
-        "127.0.0.1",
+        "localhost",
         "-p",
         "3000"
       ],

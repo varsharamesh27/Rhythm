@@ -3,7 +3,7 @@ type AuthUrlEnvironment = {
   readonly SITE_URL?: string;
 };
 
-const LOCAL_SITE_URL = "http://127.0.0.1:3000";
+const LOCAL_SITE_URL = "http://localhost:3000";
 
 export function getSiteOrigin(environment: AuthUrlEnvironment = process.env): string {
   const configuredUrl = environment.SITE_URL?.trim();
@@ -29,6 +29,26 @@ export function buildAuthUrl(
   const url = new URL(pathname, getSiteOrigin(environment));
   Object.entries(searchParams).forEach(([key, value]) => url.searchParams.set(key, value));
   return url.toString();
+}
+
+export function canonicalLocalDevelopmentUrl(
+  requestHost: string | null,
+  pathname: string,
+  search: string,
+  environment: AuthUrlEnvironment = process.env
+): string | null {
+  if (environment.NODE_ENV === "production") return null;
+
+  const siteOrigin = new URL(getSiteOrigin(environment));
+  const hostname = requestHost?.split(":")[0]?.toLowerCase();
+  const isLocalPair = new Set([hostname, siteOrigin.hostname]);
+  if (!isLocalPair.has("localhost") || !isLocalPair.has("127.0.0.1")) {
+    return null;
+  }
+  const port = requestHost?.split(":")[1] ?? "";
+  if (port !== siteOrigin.port) return null;
+
+  return new URL(`${pathname}${search}`, siteOrigin).toString();
 }
 
 export function safeNextPath(requestedNext: string | null, fallback = "/dashboard"): string {

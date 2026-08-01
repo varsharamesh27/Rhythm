@@ -1,8 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const devCommand = process.platform === "win32"
-  ? ".tools\\node\\node.exe node_modules\\next\\dist\\bin\\next dev -H 127.0.0.1 -p 3100"
-  : "npm run dev -- --hostname 127.0.0.1 --port 3100";
+  ? ".tools\\node\\node.exe node_modules\\next\\dist\\bin\\next dev -H localhost -p 3100"
+  : "npm run dev -- --hostname localhost --port 3100";
 
 export default defineConfig({
   globalSetup: "./tests/global-setup.ts",
@@ -10,7 +10,7 @@ export default defineConfig({
   timeout: 30000,
   workers: 1,
   use: {
-    baseURL: "http://127.0.0.1:3100",
+    baseURL: "http://localhost:3100",
     storageState: process.env.PLAYWRIGHT_STORAGE_STATE || undefined,
     trace: "on-first-retry"
   },
@@ -21,7 +21,7 @@ export default defineConfig({
       SUPABASE_ANON_KEY: "",
       SUPABASE_URL: ""
     },
-    url: "http://127.0.0.1:3100",
+    url: "http://localhost:3100",
     reuseExistingServer: false,
     timeout: 120000
   },

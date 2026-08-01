@@ -1,5 +1,6 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { canonicalLocalDevelopmentUrl } from "@/lib/auth-urls";
 import { hasSupabaseConfiguration } from "@/lib/demo-mode";
 
 type CookieToSet = {
@@ -9,6 +10,13 @@ type CookieToSet = {
 };
 
 export async function middleware(request: NextRequest) {
+  const canonicalLocalUrl = canonicalLocalDevelopmentUrl(
+    request.headers.get("host"),
+    request.nextUrl.pathname,
+    request.nextUrl.search
+  );
+  if (canonicalLocalUrl) return NextResponse.redirect(canonicalLocalUrl, 307);
+
   if (!hasSupabaseConfiguration()) return NextResponse.next({ request });
 
   const url = process.env.SUPABASE_URL;
