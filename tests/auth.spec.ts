@@ -6,5 +6,5 @@ test("exits the local demo workspace", async ({ page }) => {
 
   await page.getByRole("button", { name: "Exit demo" }).click();
 
-  await expect(page.getByRole("heading", { name: "Sign in to rhythm" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Log in to Rhythm" })).toBeVisible();
 });
