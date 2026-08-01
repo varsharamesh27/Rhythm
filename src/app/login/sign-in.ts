@@ -11,6 +11,7 @@ import {
   getPasswordSignInErrorMessage,
   getPasswordSignUpErrorMessage
 } from "@/lib/auth-errors";
+import { buildAuthUrl } from "@/lib/auth-urls";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
   authEmailSchema,
@@ -101,8 +102,5 @@ function loginMessage(message: string): string {
 }
 
 function authCallbackUrl(next: string): string {
-  const siteUrl = process.env.SITE_URL?.trim() || "http://127.0.0.1:3000";
-  const callback = new URL("/auth/callback", siteUrl);
-  callback.searchParams.set("next", next);
-  return callback.toString();
+  return buildAuthUrl("/auth/callback", { next });
 }
