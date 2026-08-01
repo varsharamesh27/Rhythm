@@ -39,6 +39,12 @@ export function getPasswordSignUpErrorMessage(error: AuthErrorLike): string {
   if (details.includes("signup") && details.includes("disabled")) {
     return "New account registration is currently disabled in Supabase.";
   }
+  if (details.includes("email address not authorized")) {
+    return "Supabase email delivery is limited to authorized addresses. Use a project-team email for testing or configure custom SMTP.";
+  }
+  if (details.includes("user already registered") || details.includes("already been registered")) {
+    return "This email may already have an account. Log in or reset the password instead.";
+  }
   return "We could not create the account. Check the details and try again.";
 }
 

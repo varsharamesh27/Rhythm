@@ -24,6 +24,12 @@ describe("authentication error messages", () => {
     expect(getPasswordRecoveryErrorMessage({ status: 429 })).toContain("Wait a few minutes");
   });
 
+  it("explains Supabase's restricted default email delivery", () => {
+    expect(getPasswordSignUpErrorMessage({ message: "Email address not authorized" })).toContain(
+      "configure custom SMTP"
+    );
+  });
+
   it("explains that PKCE links must return to the same browser", () => {
     expect(getAuthCallbackErrorMessage({ message: "PKCE code verifier not found in storage." })).toContain("same browser and device");
   });
