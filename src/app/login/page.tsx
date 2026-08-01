@@ -131,6 +131,7 @@ export default async function LoginPage({
                 <Label>Confirm password<Input name="confirmPassword" type="password" autoComplete="new-password" minLength={8} required /></Label>
                 <p className="text-sm text-muted-foreground">Use at least 8 characters. Your password is handled by Supabase and is never stored in Rhythm.</p>
                 <Button className="gap-2" type="submit"><UserPlus size={17} />Create account</Button>
+                <p className="text-sm text-muted-foreground">Already used this email in Rhythm? <Link className="font-semibold text-foreground hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" href="/login?mode=forgot">Set a password</Link>.</p>
               </form>
             ) : null}
 

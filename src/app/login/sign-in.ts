@@ -65,6 +65,9 @@ export async function signUpWithPassword(formData: FormData) {
     redirect(`/login?mode=signup&message=${encodeURIComponent(getPasswordSignUpErrorMessage(error))}`);
   }
   if (data.session) redirect("/dashboard");
+  if (data.user?.identities?.length === 0) {
+    redirect(`/login?mode=forgot&message=${encodeURIComponent("This email already has a Rhythm account. Set a password using the reset link.")}`);
+  }
 
   redirect(loginMessage("Check your email to confirm the account. If no message arrives, log in or reset the password instead."));
 }
