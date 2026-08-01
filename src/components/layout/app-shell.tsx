@@ -1,8 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { AudioWaveform, Compass, LogOut } from "lucide-react";
+import { AudioWaveform, Compass } from "lucide-react";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
-import { signOutAction } from "@/app/auth/sign-out";
 import { DesktopNavigation, MobileNavigation } from "@/components/layout/app-navigation";
 import { isDemoMode } from "@/lib/demo-mode";
 
@@ -25,11 +24,6 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="absolute bottom-6 left-6 right-6">
           <div className="grid gap-2 border-t border-border pt-4">
             <ThemeToggle />
-            <form action={signOutAction}>
-              <button className="flex min-h-10 w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary" type="submit">
-                <LogOut size={18} />{demoMode ? "Exit demo" : "Sign out"}
-              </button>
-            </form>
           </div>
         </div>
       </aside>
@@ -42,11 +36,6 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Link>
             <div className="flex items-center gap-2">
               <ThemeToggle compact />
-              <form action={signOutAction}>
-                <button aria-label={demoMode ? "Exit demo" : "Sign out"} className="grid size-10 place-items-center rounded-md border border-border bg-card text-foreground hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary" title={demoMode ? "Exit demo" : "Sign out"} type="submit">
-                  <LogOut size={18} />
-                </button>
-              </form>
             </div>
           </div>
           <div className="mt-3"><MobileNavigation /></div>

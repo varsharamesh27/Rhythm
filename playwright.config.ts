@@ -8,6 +8,7 @@ export default defineConfig({
   globalSetup: "./tests/global-setup.ts",
   testDir: "./tests",
   timeout: 30000,
+  workers: 1,
   use: {
     baseURL: "http://127.0.0.1:3100",
     storageState: process.env.PLAYWRIGHT_STORAGE_STATE || undefined,

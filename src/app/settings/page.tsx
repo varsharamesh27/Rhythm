@@ -4,14 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { getCurrentUserId } from "@/lib/db/auth";
+import { getCurrentUserContext } from "@/lib/db/auth";
 import { getProfile } from "@/lib/db/profile";
 import { saveSettingsAction } from "./actions";
 
 export default async function SettingsPage() {
-  const userId = await getCurrentUserId();
-  if (!userId) redirect("/login");
-  const profile = await getProfile(userId);
+  const user = await getCurrentUserContext();
+  if (!user) redirect("/login");
+  const profile = await getProfile(user.id);
 
   return (
     <AppShell>
@@ -30,6 +30,15 @@ export default async function SettingsPage() {
             </form>
           </CardContent>
         </Card>
+        {user.isAnonymous ? (
+          <Card className="max-w-xl">
+            <CardHeader><CardTitle>Browser workspace</CardTitle></CardHeader>
+            <CardContent className="grid gap-3 text-sm leading-6 text-muted-foreground">
+              <p>Rhythm opens this private workspace automatically. There is no email, password, or login screen.</p>
+              <p>This workspace belongs to this browser. Clearing this site&apos;s cookies or opening Rhythm in another browser or device creates a different empty workspace.</p>
+            </CardContent>
+          </Card>
+        ) : null}
       </div>
     </AppShell>
   );
