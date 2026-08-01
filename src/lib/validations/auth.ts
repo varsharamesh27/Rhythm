@@ -1,16 +1,34 @@
 import { z } from "zod";
 
-export const authEmailSchema = z.string().trim().email();
+export const authEmailSchema = z.string().trim().email("Enter a valid email address.");
 
-export const emailOtpSchema = z
+const passwordSchema = z
   .string()
-  .trim()
-  .regex(/^\d{6,10}$/, "Enter the numeric code from the newest email.");
+  .min(8, "Password must contain at least 8 characters.")
+  .max(128, "Password must contain 128 characters or fewer.");
 
 export const passwordSignInSchema = z.object({
   email: authEmailSchema,
-  password: z
-    .string()
-    .min(8, "Password must contain at least 8 characters.")
-    .max(128, "Password must contain 128 characters or fewer.")
+  password: passwordSchema
 });
+
+export const passwordSignUpSchema = z
+  .object({
+    email: authEmailSchema,
+    password: passwordSchema,
+    confirmPassword: z.string()
+  })
+  .refine((values) => values.password === values.confirmPassword, {
+    message: "Passwords do not match.",
+    path: ["confirmPassword"]
+  });
+
+export const passwordResetSchema = z
+  .object({
+    password: passwordSchema,
+    confirmPassword: z.string()
+  })
+  .refine((values) => values.password === values.confirmPassword, {
+    message: "Passwords do not match.",
+    path: ["confirmPassword"]
+  });

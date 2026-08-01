@@ -6,7 +6,7 @@ No AI model is integrated yet. Current insights are deterministic summaries from
 
 ## Implemented workflows
 
-- Supabase magic-link authentication
+- Supabase email/password signup, login, persistent sessions, and password recovery
 - Responsive desktop and mobile app shell
 - Today daily check-in with Zod validation and Supabase persistence
 - Dashboard reading check-ins, custom habits, and schedule entries
@@ -76,6 +76,8 @@ Playwright starts a separate application server on port `3100`, resets `.playwri
 - Database access is isolated in `src/lib/db`; UI components call typed functions or server actions, not Supabase directly.
 - Next.js server components and server actions are the application backend. `src/lib/supabase/server.ts` creates the cookie-aware Supabase client used by that backend.
 - Supabase Auth owns accounts and sessions. Supabase PostgreSQL is the durable data store; records are associated with the authenticated user's UUID.
+- Supabase stores password hashes; Rhythm never stores or retrieves a user's plain-text password. Forgotten passwords are replaced through the recovery flow.
+- `src/lib/auth-urls.ts` creates every account callback and redirect from one canonical `SITE_URL`. It rejects external `next` destinations and requires HTTPS in production.
 - `schedule_templates.user_id` stores each account's editable ideal routine. Copying that account's relevant every-day or weekday blocks creates dated `schedule_entries` with the same `user_id`; recording actual times never changes the ideal template or past days.
 - Personal schedules are never seeded globally. A new account begins with no ideal blocks and creates its own. RLS checks `auth.uid()` on both schedule tables, so one account cannot read or modify another account's schedule.
 - Zod schemas live in `src/lib/validations` and validate server action input.
@@ -99,29 +101,32 @@ SUPABASE_ANON_KEY=your publishable or anon key
 SITE_URL=https://your-production-domain.example
 ```
 
-5. In Supabase Authentication URL Configuration, set:
+5. For local development, open **Authentication > URL Configuration** and set these exact values:
 
 ```text
-Site URL: https://your-production-domain.example
-Redirect URL: https://your-production-domain.example/auth/callback
+Site URL: http://127.0.0.1:3000
+Redirect URL: http://127.0.0.1:3000/auth/callback
+Redirect URL: http://127.0.0.1:3000/auth/confirm
 ```
 
-6. In Supabase Authentication, open **Email Templates**, select **Magic Link**, and replace the template with:
+Do not mix `localhost` and `127.0.0.1`; browser cookies treat them as different sites. For production, replace all three origins with the deployed HTTPS domain and set the same domain in the host's `SITE_URL` variable.
+
+6. In **Authentication > Sign In / Providers > Email**, enable email/password signup and keep email confirmation enabled for public use.
+7. In **Authentication > Email Templates > Confirm signup**, use this link:
 
 ```html
-<h2>Your Rhythm sign-in code</h2>
-<p>Enter this code in Rhythm:</p>
-<p style="font-size: 32px; font-weight: 700; letter-spacing: 6px;">{{ .Token }}</p>
-<p>This code expires soon and can be used only once.</p>
+<a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=signup&amp;next=/dashboard">Confirm your Rhythm account</a>
 ```
 
-Set the subject to `Your Rhythm sign-in code`. Supabase sends a numeric OTP when this template uses `{{ .Token }}`; using `{{ .ConfirmationURL }}` sends a magic link instead.
+8. In **Authentication > Email Templates > Reset password**, use this link:
 
-New Supabase free-tier projects using the default email provider may have template editing disabled. In that case, configure custom SMTP before this step; the application cannot change the hosted email template through the publishable key.
+```html
+<a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=recovery&amp;next=/reset-password">Reset your Rhythm password</a>
+```
 
-7. Configure custom SMTP before inviting many people. Supabase's default mail sender is intended for initial testing, is limited to project-team addresses, and has a very low rate limit.
-8. Configure Auth rate limits and CAPTCHA, require MFA for project administrators, and enable SSL enforcement.
-9. Deploy and create two test accounts. Confirm that each account can see only its own records.
+9. Configure custom SMTP before inviting many people. Supabase's default sender is intended for initial testing, is limited to project-team addresses, and has a very low rate limit.
+10. Configure Auth rate limits and CAPTCHA, require MFA for project administrators, and enable SSL enforcement.
+11. Deploy and create two test accounts. Confirm that each account can see only its own records.
 
 The publishable/anon key is designed for client-facing applications, but Rhythm keeps it server-side because no browser component needs direct database access. Never configure a Supabase service-role key in this application. RLS is the data-isolation boundary and must remain enabled for every user-owned table.
 
@@ -142,7 +147,9 @@ Demo data lives only in `.demo-data.json` on the local computer. It is intention
 
 Once real Supabase variables are present, demo mode turns off automatically:
 
-- Login sends a temporary email code and creates a private workspace for each authenticated user.
+- A new user chooses an email and password, confirms the signup email, and then logs in.
+- Existing sessions persist in secure cookies and are refreshed by middleware.
+- A forgotten password is replaced through the email recovery link; an existing password cannot be displayed or recovered.
 - Check-ins, habits, schedules, goals, reviews, and settings are stored in Supabase.
 - Refreshing, restarting, or changing devices does not remove cloud records.
 - RLS restricts every query to the authenticated user's records.

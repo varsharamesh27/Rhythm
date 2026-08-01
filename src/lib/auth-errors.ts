@@ -5,82 +5,72 @@ type AuthErrorLike = {
 };
 
 const SAME_BROWSER_MESSAGE =
-  "Open the newest sign-in link in the same browser and device where you requested it.";
+  "Open the newest account link in the same browser and device where you requested it.";
 
-export function getOtpRequestErrorMessage(error: AuthErrorLike): string {
+function isRateLimited(error: AuthErrorLike): boolean {
   const details = `${error.code ?? ""} ${error.message ?? ""}`.toLowerCase();
-
-  if (
-    error.status === 429 ||
-    details.includes("rate limit") ||
-    details.includes("rate_limit")
-  ) {
-    return "Supabase has reached its temporary email limit. Wait up to one hour, then request one new code.";
-  }
-
-  if (details.includes("email address not authorized")) {
-    return "This email is not authorized by the current Supabase mail setup.";
-  }
-
-  return "We could not send a sign-in code. Please wait a minute and try once more.";
-}
-
-export function getOtpVerificationErrorMessage(error: AuthErrorLike): string {
-  const details = `${error.code ?? ""} ${error.message ?? ""}`.toLowerCase();
-
-  if (details.includes("expired") || details.includes("otp_expired")) {
-    return "That sign-in code has expired. Request one new code.";
-  }
-
-  if (
-    details.includes("invalid") ||
-    details.includes("token") ||
-    details.includes("otp")
-  ) {
-    return "That code is incorrect or has expired. Check the newest email and try again.";
-  }
-
-  return "We could not verify that code. Please request a new one and try again.";
+  return error.status === 429 || details.includes("rate limit") || details.includes("rate_limit");
 }
 
 export function getPasswordSignInErrorMessage(error: AuthErrorLike): string {
   const details = `${error.code ?? ""} ${error.message ?? ""}`.toLowerCase();
 
-  if (
-    error.status === 429 ||
-    details.includes("rate limit") ||
-    details.includes("rate_limit")
-  ) {
-    return "Too many sign-in attempts were made. Wait a few minutes and try again.";
+  if (isRateLimited(error)) {
+    return "Too many login attempts were made. Wait a few minutes and try again.";
   }
-
   if (details.includes("email not confirmed")) {
-    return "This account is not confirmed yet. Confirm it from Supabase Users before signing in.";
+    return "Confirm your email before logging in. Open the newest message from Rhythm.";
   }
-
-  if (
-    details.includes("invalid login credentials") ||
-    details.includes("invalid_credentials")
-  ) {
-    return "The email or password is incorrect.";
+  if (details.includes("invalid login credentials") || details.includes("invalid_credentials")) {
+    return "The email or password is incorrect. Create an account first or reset your password.";
   }
+  return "We could not log in to this account. Please wait a minute and try again.";
+}
 
-  return "We could not sign in to this account. Please wait a minute and try again.";
+export function getPasswordSignUpErrorMessage(error: AuthErrorLike): string {
+  const details = `${error.code ?? ""} ${error.message ?? ""}`.toLowerCase();
+
+  if (isRateLimited(error)) {
+    return "Too many account requests were made. Wait a few minutes and try again.";
+  }
+  if (details.includes("password") && details.includes("weak")) {
+    return "Choose a stronger password with at least 8 characters.";
+  }
+  if (details.includes("signup") && details.includes("disabled")) {
+    return "New account registration is currently disabled in Supabase.";
+  }
+  if (details.includes("email address not authorized")) {
+    return "Supabase email delivery is limited to authorized addresses. Use a project-team email for testing or configure custom SMTP.";
+  }
+  if (details.includes("user already registered") || details.includes("already been registered")) {
+    return "This email may already have an account. Log in or reset the password instead.";
+  }
+  return "We could not create the account. Check the details and try again.";
+}
+
+export function getPasswordRecoveryErrorMessage(error: AuthErrorLike): string {
+  if (isRateLimited(error)) {
+    return "Too many reset requests were made. Wait a few minutes and try again.";
+  }
+  return "We could not send a password reset email. Please wait a minute and try again.";
+}
+
+export function getPasswordUpdateErrorMessage(error: AuthErrorLike): string {
+  const details = `${error.code ?? ""} ${error.message ?? ""}`.toLowerCase();
+  if (details.includes("same password")) {
+    return "Choose a password you have not used for this account.";
+  }
+  return "We could not update the password. Request a new reset link and try again.";
 }
 
 export function getAuthCallbackErrorMessage(error: AuthErrorLike): string {
   const details = `${error.code ?? ""} ${error.message ?? ""}`.toLowerCase();
 
-  if (
-    details.includes("code verifier") ||
-    details.includes("bad_code_verifier")
-  ) {
+  if (details.includes("code verifier") || details.includes("bad_code_verifier")) {
     return SAME_BROWSER_MESSAGE;
   }
-
   if (details.includes("expired") || details.includes("otp_expired")) {
-    return "That sign-in link has expired. Return here and request one new link.";
+    return "That account link has expired. Request a new one.";
   }
-
-  return "That sign-in link could not be verified. Return here and request one new link.";
+  return "That account link could not be verified. Request a new one.";
 }
