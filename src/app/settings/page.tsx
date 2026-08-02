@@ -17,19 +17,24 @@ export default async function SettingsPage() {
     <AppShell>
       <div className="grid gap-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-normal">Settings</h1>
-          <p className="mt-2 max-w-2xl text-zinc-600 dark:text-zinc-300">Keep your private rhythm profile simple and portable.</p>
+          <h1 className="font-display text-4xl font-semibold">Your Rhythm</h1>
+          <p className="mt-2 max-w-2xl text-muted-foreground">Set the identity and timezone used across your personal workspace.</p>
         </div>
         <Card className="max-w-xl">
-          <CardHeader><CardTitle>Profile</CardTitle></CardHeader>
+          <CardHeader><CardTitle>Workspace identity</CardTitle></CardHeader>
           <CardContent>
+            <p className="mb-5 text-sm text-muted-foreground">Your first name personalizes the dashboard and navigation. Your email is never used as your name.</p>
             <form action={saveSettingsAction} className="grid gap-4">
-              <Label>Display name<Input name="displayName" defaultValue={profile?.display_name ?? "Varsh"} required /></Label>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Label>First name<Input name="firstName" defaultValue={profile?.first_name ?? ""} autoComplete="given-name" required /></Label>
+                <Label>Last name<Input name="lastName" defaultValue={profile?.last_name ?? ""} autoComplete="family-name" required /></Label>
+              </div>
               <Label>Timezone<Input name="timezone" defaultValue={profile?.timezone ?? "America/New_York"} required /></Label>
               <Button type="submit">Save settings</Button>
             </form>
           </CardContent>
         </Card>
+        {profile?.workspace_role === "owner" ? <p className="text-sm font-medium text-accent">Owner workspace active</p> : null}
       </div>
     </AppShell>
   );

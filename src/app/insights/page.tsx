@@ -44,8 +44,8 @@ export default async function InsightsPage() {
     <AppShell>
       <div className="grid gap-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-normal">Insights</h1>
-          <p className="mt-2 max-w-2xl text-zinc-600 dark:text-zinc-300">Transparent summaries from your logs. No AI model is connected yet.</p>
+          <h1 className="font-display text-4xl font-semibold">Insights</h1>
+          <p className="mt-2 max-w-2xl text-muted-foreground">Transparent summaries from your logs. No AI model is connected yet.</p>
         </div>
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <MetricCard title="Routine consistency" value={`${metrics.routineConsistency}%`} helper="Sleep quality, mood, energy, and nutrition." />
@@ -84,8 +84,8 @@ export default async function InsightsPage() {
             <Card>
               <CardHeader><CardTitle>Active goals</CardTitle></CardHeader>
               <CardContent className="grid gap-3">
-                {activeGoals.length === 0 ? <p className="text-sm text-zinc-600 dark:text-zinc-300">No active goals yet.</p> : null}
-                {activeGoals.map((goal) => <div key={goal.id} className="rounded-md bg-orange-50 dark:bg-zinc-800 p-3"><p className="font-medium text-zinc-950 dark:text-zinc-50">{goal.title}</p><p className="text-sm text-zinc-600 dark:text-zinc-300">{goal.category}{goal.target_date ? ` - ${goal.target_date}` : ""}</p></div>)}
+                {activeGoals.length === 0 ? <p className="text-sm text-muted-foreground">No active goals yet.</p> : null}
+                {activeGoals.map((goal) => <div key={goal.id} className="border-l-2 border-accent bg-muted p-3"><p className="font-medium text-foreground">{goal.title}</p><p className="text-sm text-muted-foreground">{goal.category}{goal.target_date ? ` - ${goal.target_date}` : ""}</p></div>)}
               </CardContent>
             </Card>
           </div>
@@ -93,8 +93,8 @@ export default async function InsightsPage() {
         <Card>
           <CardHeader><CardTitle>Past reviews</CardTitle></CardHeader>
           <CardContent className="grid gap-3">
-            {reviews.length === 0 ? <p className="text-sm text-zinc-600 dark:text-zinc-300">Weekly reviews you save will appear here.</p> : null}
-            {reviews.map((review) => <article key={review.id} className="rounded-lg border border-rose-200 dark:border-zinc-700 p-4"><h2 className="font-semibold">Week of {review.week_start}</h2><p className="mt-2 text-sm text-zinc-600 dark:text-zinc-300">{review.next_week_focus ?? review.routine_summary ?? "Review saved."}</p></article>)}
+            {reviews.length === 0 ? <p className="text-sm text-muted-foreground">Weekly reviews you save will appear here.</p> : null}
+            {reviews.map((review) => <article key={review.id} className="rounded-md border border-border p-4"><h2 className="font-display font-semibold">Week of {review.week_start}</h2><p className="mt-2 text-sm text-muted-foreground">{review.next_week_focus ?? review.routine_summary ?? "Review saved."}</p></article>)}
           </CardContent>
         </Card>
       </div>

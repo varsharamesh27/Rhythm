@@ -4,38 +4,46 @@
 
 :root {
   color-scheme: light;
-  --background: 35 100% 97%;
-  --foreground: 235 25% 13%;
+  --background: 210 20% 98%;
+  --foreground: 222 28% 14%;
   --card: 0 0% 100%;
-  --border: 24 38% 86%;
-  --muted: 42 95% 94%;
-  --muted-foreground: 236 14% 39%;
-  --primary: 346 78% 48%;
+  --border: 214 18% 84%;
+  --muted: 210 20% 95%;
+  --muted-foreground: 218 10% 40%;
+  --primary: 351 59% 32%;
   --primary-foreground: 0 0% 100%;
-  --accent: 174 74% 38%;
+  --accent: 161 38% 29%;
   --accent-foreground: 0 0% 100%;
-  --sun: 39 96% 57%;
-  --violet: 262 66% 58%;
+  --sun: 39 74% 42%;
+  --violet: 260 33% 46%;
   --destructive: 0 72% 45%;
-  --page-gradient: linear-gradient(135deg, hsl(35 100% 97%) 0%, hsl(49 100% 95%) 36%, hsl(174 64% 94%) 67%, hsl(300 73% 97%) 100%);
+  --routine: 351 59% 40%;
+  --recovery: 202 54% 37%;
+  --movement: 158 40% 34%;
+  --nutrition: 39 74% 42%;
+  --career: 260 33% 46%;
 }
 
 .dark {
   color-scheme: dark;
-  --background: 235 22% 10%;
-  --foreground: 36 38% 94%;
-  --card: 235 20% 14%;
-  --border: 236 16% 28%;
-  --muted: 235 16% 18%;
-  --muted-foreground: 38 16% 72%;
-  --primary: 346 82% 62%;
-  --primary-foreground: 235 25% 9%;
-  --accent: 174 74% 46%;
-  --accent-foreground: 235 25% 9%;
-  --sun: 39 96% 62%;
-  --violet: 262 76% 70%;
+  --background: 30 5% 9%;
+  --foreground: 40 20% 92%;
+  --card: 28 5% 13%;
+  --border: 30 5% 27%;
+  --muted: 28 5% 17%;
+  --muted-foreground: 35 9% 68%;
+  --primary: 352 48% 58%;
+  --primary-foreground: 30 8% 8%;
+  --accent: 155 28% 54%;
+  --accent-foreground: 30 8% 8%;
+  --sun: 40 69% 61%;
+  --violet: 258 39% 68%;
   --destructive: 0 74% 62%;
-  --page-gradient: linear-gradient(135deg, hsl(235 24% 9%) 0%, hsl(255 28% 13%) 38%, hsl(204 33% 14%) 68%, hsl(330 28% 13%) 100%);
+  --routine: 352 48% 58%;
+  --recovery: 199 45% 62%;
+  --movement: 155 28% 54%;
+  --nutrition: 40 69% 61%;
+  --career: 258 39% 68%;
 }
 
 * { box-sizing: border-box; }
@@ -43,7 +51,14 @@ html { min-height: 100%; }
 body {
   margin: 0;
   min-height: 100vh;
-  background: var(--page-gradient);
+  background-color: hsl(var(--background));
   color: hsl(var(--foreground));
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 a { color: inherit; text-decoration: none; }
+.font-display {
+  font-family: Georgia, "Times New Roman", serif;
+}
+::selection {
+  background: hsl(var(--primary) / 0.18);
+}

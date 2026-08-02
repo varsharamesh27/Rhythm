@@ -16,3 +16,4 @@ coverage
 .next-dev.*.log
 .next-dev.log
 .demo-data.json
+.playwright-demo-data.json

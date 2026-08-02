@@ -46,7 +46,7 @@ export function ThemeToggle({ compact = false }: { compact?: boolean }) {
   }
 
   return (
-    <div className="inline-flex rounded-md border border-rose-200 bg-white/90 p-1 shadow-sm dark:border-zinc-700 dark:bg-zinc-900/90" aria-label="Color theme">
+    <div className="inline-flex rounded-md border border-border bg-card p-1" aria-label="Color theme">
       {choices.map((choice) => {
         const Icon = choice.icon;
         const active = theme === choice.value;
@@ -54,8 +54,8 @@ export function ThemeToggle({ compact = false }: { compact?: boolean }) {
           <button
             aria-pressed={active}
             className={cn(
-              "inline-flex min-h-9 items-center justify-center gap-2 rounded px-2.5 text-sm font-semibold text-zinc-700 transition hover:bg-rose-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600 dark:text-zinc-200 dark:hover:bg-zinc-800 dark:focus-visible:outline-teal-400",
-              active && "bg-rose-600 text-white hover:bg-rose-600 dark:bg-teal-500 dark:text-zinc-950 dark:hover:bg-teal-500"
+              "inline-flex min-h-9 items-center justify-center gap-2 rounded-sm px-2.5 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+              active && "bg-foreground text-background hover:bg-foreground hover:text-background"
             )}
             key={choice.value}
             onClick={() => chooseTheme(choice.value)}

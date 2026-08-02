@@ -1,7 +1,6 @@
 import { existsSync, readFileSync, writeFileSync } from "fs";
-import { join } from "path";
+import { join, resolve } from "path";
 import { DEMO_USER_ID } from "@/lib/demo-mode";
-import type { RoutineBlock } from "@/lib/routine-preset";
 import type {
   DailyCheckin,
   DailyCheckinInsert,
@@ -9,10 +8,12 @@ import type {
   Habit,
   HabitCategory,
   HabitLog,
+  ScheduleBlockInput,
   ScheduleEntry,
+  ScheduleTemplate,
   UserProfile,
   WeeklyMenuItem,
-  WeeklyMenuItemInsert,
+  WeeklyMenuItemUpsert,
   WeeklyReview
 } from "@/types/database";
 
@@ -21,13 +22,16 @@ type DemoState = {
   habits: Habit[];
   habitLogs: HabitLog[];
   checkins: DailyCheckin[];
+  scheduleTemplates: ScheduleTemplate[];
   scheduleEntries: ScheduleEntry[];
   weeklyMenuItems: WeeklyMenuItem[];
   goals: Goal[];
   weeklyReviews: WeeklyReview[];
 };
 
-const STORE_PATH = join(process.cwd(), ".demo-data.json");
+const STORE_PATH = process.env.RHYTHM_DEMO_DATA_PATH
+  ? resolve(process.cwd(), process.env.RHYTHM_DEMO_DATA_PATH)
+  : join(process.cwd(), ".demo-data.json");
 
 export function readDemoState(): DemoState {
   if (!existsSync(STORE_PATH)) {
@@ -36,7 +40,11 @@ export function readDemoState(): DemoState {
     return seeded;
   }
   const state = JSON.parse(readFileSync(STORE_PATH, "utf8")) as DemoState;
-  return { ...state, weeklyMenuItems: state.weeklyMenuItems ?? [] };
+  return {
+    ...state,
+    scheduleTemplates: state.scheduleTemplates ?? [],
+    weeklyMenuItems: state.weeklyMenuItems ?? []
+  };
 }
 
 export function writeDemoState(state: DemoState): void {
@@ -130,6 +138,61 @@ export function listDemoScheduleEntries(date: string): ScheduleEntry[] {
   return readDemoState().scheduleEntries.filter((entry) => entry.entry_date === date).sort((a, b) => a.planned_start.localeCompare(b.planned_start));
 }
 
+export function listDemoScheduleTemplates(): ScheduleTemplate[] {
+  return readDemoState().scheduleTemplates.sort((a, b) => a.start_time.localeCompare(b.start_time));
+}
+
+export function createDemoScheduleTemplate(input: {
+  name: string;
+  weekday: number | null;
+  startTime: string;
+  endTime: string;
+  category: HabitCategory;
+}): void {
+  const state = readDemoState();
+  state.scheduleTemplates.push({
+    id: newId(),
+    user_id: DEMO_USER_ID,
+    name: input.name,
+    weekday: input.weekday,
+    start_time: input.startTime,
+    end_time: input.endTime,
+    category: input.category,
+    created_at: new Date().toISOString()
+  });
+  writeDemoState(state);
+}
+
+export function updateDemoScheduleTemplate(input: {
+  templateId: string;
+  name: string;
+  weekday: number | null;
+  startTime: string;
+  endTime: string;
+  category: HabitCategory;
+}): void {
+  const state = readDemoState();
+  state.scheduleTemplates = state.scheduleTemplates.map((template) =>
+    template.id === input.templateId
+      ? {
+          ...template,
+          name: input.name,
+          weekday: input.weekday,
+          start_time: input.startTime,
+          end_time: input.endTime,
+          category: input.category
+        }
+      : template
+  );
+  writeDemoState(state);
+}
+
+export function deleteDemoScheduleTemplate(templateId: string): void {
+  const state = readDemoState();
+  state.scheduleTemplates = state.scheduleTemplates.filter((template) => template.id !== templateId);
+  writeDemoState(state);
+}
+
 export function listRecentDemoScheduleEntries(startDate: string, endDate: string): ScheduleEntry[] {
   return readDemoState().scheduleEntries.filter((entry) => entry.entry_date >= startDate && entry.entry_date <= endDate).sort(byDate("entry_date"));
 }
@@ -160,7 +223,7 @@ export function updateDemoScheduleActual(input: { entryId: string; actualStart: 
   writeDemoState(state);
 }
 
-export function addDemoRoutineEntries(date: string, blocks: ReadonlyArray<RoutineBlock>): void {
+export function addDemoRoutineEntries(date: string, blocks: ReadonlyArray<ScheduleBlockInput>): void {
   const state = readDemoState();
   const existing = new Set(
     state.scheduleEntries
@@ -195,24 +258,27 @@ export function listDemoWeeklyMenuItems(startDate: string, endDate: string): Wee
     .sort((a, b) => a.meal_date.localeCompare(b.meal_date) || a.meal_slot.localeCompare(b.meal_slot));
 }
 
-export function upsertDemoWeeklyMenuItems(items: WeeklyMenuItemInsert[]): void {
+export function replaceDemoWeeklyMenuItems(
+  weekStart: string,
+  weekEnd: string,
+  items: WeeklyMenuItemUpsert[]
+): void {
   const state = readDemoState();
   const now = new Date().toISOString();
+  const existingById = new Map(state.weeklyMenuItems.map((item) => [item.id, item]));
 
-  for (const input of items) {
-    const index = state.weeklyMenuItems.findIndex(
-      (item) => item.meal_date === input.meal_date && item.meal_slot === input.meal_slot
-    );
-    const existing = index >= 0 ? state.weeklyMenuItems[index] : null;
-    const row: WeeklyMenuItem = {
-      id: existing?.id ?? newId(),
+  const replacement = items.map((input): WeeklyMenuItem => {
+    const existing = existingById.get(input.id);
+    return {
       ...input,
       created_at: existing?.created_at ?? now,
       updated_at: now
     };
-    if (index >= 0) state.weeklyMenuItems[index] = row;
-    else state.weeklyMenuItems.push(row);
-  }
+  });
+
+  state.weeklyMenuItems = state.weeklyMenuItems
+    .filter((item) => item.meal_date < weekStart || item.meal_date > weekEnd)
+    .concat(replacement);
   writeDemoState(state);
 }
 
@@ -220,9 +286,15 @@ export function getDemoProfile(): UserProfile {
   return readDemoState().profile;
 }
 
-export function upsertDemoProfile(input: { displayName: string; timezone: string }): void {
+export function upsertDemoProfile(input: { firstName: string; lastName: string; timezone: string }): void {
   const state = readDemoState();
-  state.profile = { ...state.profile, display_name: input.displayName, timezone: input.timezone };
+  state.profile = {
+    ...state.profile,
+    first_name: input.firstName,
+    last_name: input.lastName,
+    display_name: `${input.firstName} ${input.lastName}`,
+    timezone: input.timezone
+  };
   writeDemoState(state);
 }
 
@@ -270,10 +342,11 @@ export function upsertDemoWeeklyReview(input: Omit<WeeklyReview, "id" | "created
 
 function createSeedState(): DemoState {
   return {
-    profile: { id: DEMO_USER_ID, display_name: "Varsh", timezone: "America/New_York", created_at: new Date().toISOString() },
+    profile: { id: DEMO_USER_ID, first_name: null, last_name: null, display_name: null, timezone: "America/New_York", workspace_role: "member", created_at: new Date().toISOString() },
     habits: [],
     habitLogs: [],
     checkins: [],
+    scheduleTemplates: [],
     scheduleEntries: [],
     weeklyMenuItems: [],
     goals: [],

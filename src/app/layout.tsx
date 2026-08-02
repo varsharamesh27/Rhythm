@@ -4,7 +4,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "rhythm",
-  description: "Private habit, health, and schedule tracking."
+  description: "Habit, health, meal, and schedule tracking that helps each day add up."
 };
 
 const themeScript = `

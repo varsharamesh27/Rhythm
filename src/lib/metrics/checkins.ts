@@ -10,6 +10,14 @@ export type DashboardMetrics = {
   weightTrend: Array<{ date: string; weight: number }>;
 };
 
+export type CategoryScores = {
+  routine: number;
+  recovery: number;
+  movement: number;
+  nutrition: number;
+  career: number;
+};
+
 const habitKeys = [
   "workout_completed",
   "yoga_completed",
@@ -55,4 +63,54 @@ export function aggregateDashboardMetrics(checkins: DailyCheckin[]): DashboardMe
       .filter((checkin) => checkin.weight !== null)
       .map((checkin) => ({ date: checkin.checkin_date, weight: Number(checkin.weight) }))
   };
+}
+
+export function aggregateCategoryScores(
+  checkins: DailyCheckin[],
+  scheduleAdherence: number
+): CategoryScores {
+  const recent = [...checkins].sort((a, b) => a.checkin_date.localeCompare(b.checkin_date)).slice(-7);
+  if (recent.length === 0) {
+    return {
+      routine: clampPercentage(scheduleAdherence),
+      recovery: 0,
+      movement: 0,
+      nutrition: 0,
+      career: 0
+    };
+  }
+
+  const recoveryPoints = recent.reduce(
+    (total, checkin) => total + checkin.sleep_quality + checkin.energy,
+    0
+  );
+  const movementPoints = recent.reduce(
+    (total, checkin) =>
+      total +
+      Number(checkin.workout_completed) +
+      Number(checkin.yoga_completed) +
+      Number(checkin.walking_completed),
+    0
+  );
+  const nutritionPoints = recent.reduce(
+    (total, checkin) =>
+      total +
+      checkin.nutrition_adherence / 5 +
+      Math.min(checkin.water_intake / 8, 1),
+    0
+  );
+
+  return {
+    routine: clampPercentage(scheduleAdherence),
+    recovery: Math.round((recoveryPoints / (recent.length * 10)) * 100),
+    movement: Math.round((movementPoints / (recent.length * 3)) * 100),
+    nutrition: Math.round((nutritionPoints / (recent.length * 2)) * 100),
+    career: Math.round(
+      (recent.filter((checkin) => checkin.study_completed).length / recent.length) * 100
+    )
+  };
+}
+
+function clampPercentage(value: number): number {
+  return Math.min(100, Math.max(0, Math.round(value)));
 }

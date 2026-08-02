@@ -1,55 +1,115 @@
 "use server";
 
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { z } from "zod";
-import { getOwnerEmail, normalizeEmail } from "@/lib/auth-configuration";
 import {
   hasSupabaseConfiguration,
   isDatabaseSetupRequired,
   isDemoMode
 } from "@/lib/demo-mode";
+import {
+  getPasswordRecoveryErrorMessage,
+  getPasswordSignInErrorMessage,
+  getPasswordSignUpErrorMessage
+} from "@/lib/auth-errors";
+import { buildAuthUrl } from "@/lib/auth-urls";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  authEmailSchema,
+  passwordSignInSchema,
+  passwordSignUpSchema
+} from "@/lib/validations/auth";
 
-const emailSchema = z.string().trim().email();
-
-export async function signInWithEmail(formData: FormData) {
-  if (isDemoMode()) redirect("/dashboard?message=demo-mode");
-  if (!hasSupabaseConfiguration()) {
-    redirect("/login?message=Connect Supabase before using production tracking.");
+export async function signInWithPassword(formData: FormData) {
+  requireSupabase();
+  const parsed = passwordSignInSchema.safeParse({
+    email: formData.get("email"),
+    password: formData.get("password")
+  });
+  if (!parsed.success) {
+    redirect(loginMessage(parsed.error.issues[0]?.message ?? "Enter a valid email and password."));
   }
 
-  const parsedEmail = emailSchema.safeParse(formData.get("email"));
-  if (!parsedEmail.success) redirect("/login?message=Enter a valid email address.");
-
-  const email = normalizeEmail(parsedEmail.data);
-  const ownerEmail = getOwnerEmail();
-  if (!ownerEmail) {
-    redirect("/login?message=The private owner email has not been configured.");
-  }
-  if (email !== ownerEmail) {
-    redirect("/login?message=This private workspace is limited to its owner.");
-  }
-
-  const origin = (await headers()).get("origin") ?? process.env.SITE_URL ?? "http://127.0.0.1:3000";
   const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.auth.signInWithOtp({
-    email,
+  const { error } = await supabase.auth.signInWithPassword({
+    email: parsed.data.email.toLowerCase(),
+    password: parsed.data.password
+  });
+  if (error) {
+    console.error("Supabase password login failed", { code: error.code, status: error.status, message: error.message });
+    redirect(loginMessage(getPasswordSignInErrorMessage(error)));
+  }
+  redirect("/dashboard");
+}
+
+export async function signUpWithPassword(formData: FormData) {
+  requireSupabase();
+  const parsed = passwordSignUpSchema.safeParse({
+    firstName: formData.get("firstName"),
+    lastName: formData.get("lastName"),
+    email: formData.get("email"),
+    password: formData.get("password"),
+    confirmPassword: formData.get("confirmPassword")
+  });
+  if (!parsed.success) {
+    redirect(`/login?mode=signup&message=${encodeURIComponent(parsed.error.issues[0]?.message ?? "Check the account details.")}`);
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.auth.signUp({
+    email: parsed.data.email.toLowerCase(),
+    password: parsed.data.password,
     options: {
-      emailRedirectTo: `${origin}/auth/callback?next=/dashboard`,
-      shouldCreateUser: true
+      data: {
+        first_name: parsed.data.firstName,
+        last_name: parsed.data.lastName
+      },
+      emailRedirectTo: authCallbackUrl("/dashboard")
     }
   });
-  if (error) redirect(`/login?message=${encodeURIComponent(error.message)}`);
-  redirect("/login?message=Check your email for a secure sign-in link.");
+  if (error) {
+    console.error("Supabase password signup failed", { code: error.code, status: error.status, message: error.message });
+    redirect(`/login?mode=signup&message=${encodeURIComponent(getPasswordSignUpErrorMessage(error))}`);
+  }
+  if (data.session) redirect("/dashboard");
+  if (data.user?.identities?.length === 0) {
+    redirect(`/login?mode=forgot&message=${encodeURIComponent("This email already has a Rhythm account. Set a password using the reset link.")}`);
+  }
+
+  redirect(loginMessage("Check your email to confirm the account. If no message arrives, log in or reset the password instead."));
+}
+
+export async function requestPasswordReset(formData: FormData) {
+  requireSupabase();
+  const parsed = authEmailSchema.safeParse(formData.get("email"));
+  if (!parsed.success) {
+    redirect(`/login?mode=forgot&message=${encodeURIComponent("Enter a valid email address.")}`);
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.toLowerCase(), {
+    redirectTo: authCallbackUrl("/reset-password")
+  });
+  if (error) {
+    console.error("Supabase password recovery failed", { code: error.code, status: error.status, message: error.message });
+    redirect(`/login?mode=forgot&message=${encodeURIComponent(getPasswordRecoveryErrorMessage(error))}`);
+  }
+  redirect(loginMessage("If an account exists for that email, Supabase will send a password reset link."));
 }
 
 export async function enterDemoWorkspace() {
-  if (isDatabaseSetupRequired()) {
-    redirect("/login?message=The production demo is disabled because its data would not be durable.");
-  }
-  if (!isDemoMode()) {
-    redirect("/login?message=Demo mode is available only during local development.");
-  }
+  if (isDatabaseSetupRequired()) redirect(loginMessage("The production demo is disabled because its data would not be durable."));
+  if (!isDemoMode()) redirect(loginMessage("Demo mode is available only during local development."));
   redirect("/dashboard?message=demo-mode");
+}
+
+function requireSupabase(): void {
+  if (!hasSupabaseConfiguration()) redirect(loginMessage("Connect Supabase before using account tracking."));
+}
+
+function loginMessage(message: string): string {
+  return `/login?message=${encodeURIComponent(message)}`;
+}
+
+function authCallbackUrl(next: string): string {
+  return buildAuthUrl("/auth/callback", { next });
 }

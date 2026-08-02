@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { aggregateDashboardMetrics, calculateSleepHours } from "./checkins";
+import {
+  aggregateCategoryScores,
+  aggregateDashboardMetrics,
+  calculateSleepHours
+} from "./checkins";
 import type { DailyCheckin } from "@/types/database";
 
 function checkin(overrides: Partial<DailyCheckin>): DailyCheckin {
@@ -50,5 +54,50 @@ describe("aggregateDashboardMetrics", () => {
     expect(metrics.studySessionCount).toBe(1);
     expect(metrics.hydrationConsistency).toBe(50);
     expect(metrics.weightTrend).toHaveLength(2);
+  });
+});
+
+describe("aggregateCategoryScores", () => {
+  it("keeps the five progress categories separate", () => {
+    const first = checkin({
+      checkin_date: "2025-01-01",
+      sleep_quality: 4,
+      energy: 3,
+      workout_completed: true,
+      yoga_completed: false,
+      walking_completed: true,
+      nutrition_adherence: 4,
+      water_intake: 8,
+      study_completed: true
+    });
+    const second = checkin({
+      checkin_date: "2025-01-02",
+      sleep_quality: 5,
+      energy: 4,
+      workout_completed: true,
+      yoga_completed: true,
+      walking_completed: true,
+      nutrition_adherence: 3,
+      water_intake: 4,
+      study_completed: false
+    });
+
+    expect(aggregateCategoryScores([first, second], 75)).toEqual({
+      routine: 75,
+      recovery: 80,
+      movement: 83,
+      nutrition: 73,
+      career: 50
+    });
+  });
+
+  it("returns an honest empty state without inventing progress", () => {
+    expect(aggregateCategoryScores([], 42)).toEqual({
+      routine: 42,
+      recovery: 0,
+      movement: 0,
+      nutrition: 0,
+      career: 0
+    });
   });
 });

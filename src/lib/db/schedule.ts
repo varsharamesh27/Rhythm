@@ -1,9 +1,26 @@
 import { unstable_noStore as noStore } from "next/cache";
 import { isDemoMode } from "@/lib/demo-mode";
-import { PERSONAL_ROUTINE } from "@/lib/routine-preset";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import type { HabitCategory, ScheduleEntry } from "@/types/database";
-import { addDemoRoutineEntries, createDemoScheduleEntry, listDemoScheduleEntries, listRecentDemoScheduleEntries, updateDemoScheduleActual } from "./demo-store";
+import type { HabitCategory, ScheduleEntry, ScheduleTemplate } from "@/types/database";
+import {
+  addDemoRoutineEntries,
+  createDemoScheduleEntry,
+  createDemoScheduleTemplate,
+  deleteDemoScheduleTemplate,
+  listDemoScheduleEntries,
+  listDemoScheduleTemplates,
+  listRecentDemoScheduleEntries,
+  updateDemoScheduleActual,
+  updateDemoScheduleTemplate
+} from "./demo-store";
+
+type ScheduleTemplateInput = {
+  name: string;
+  weekday: number | null;
+  startTime: string;
+  endTime: string;
+  category: HabitCategory;
+};
 
 export async function listScheduleEntries(userId: string, date: string): Promise<ScheduleEntry[]> {
   noStore();
@@ -35,6 +52,77 @@ export async function listRecentScheduleEntries(userId: string, startDate: strin
     .order("planned_start", { ascending: true });
   if (error) throw new Error(error.message);
   return data ?? [];
+}
+
+export async function listScheduleTemplates(userId: string): Promise<ScheduleTemplate[]> {
+  noStore();
+  if (isDemoMode()) return listDemoScheduleTemplates();
+
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("schedule_templates")
+    .select("*")
+    .eq("user_id", userId)
+    .order("start_time", { ascending: true });
+  if (error) throw new Error(error.message);
+  return data ?? [];
+}
+
+export async function createScheduleTemplate(userId: string, input: ScheduleTemplateInput): Promise<void> {
+  if (isDemoMode()) {
+    createDemoScheduleTemplate(input);
+    return;
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.from("schedule_templates").insert({
+    user_id: userId,
+    name: input.name,
+    weekday: input.weekday,
+    start_time: input.startTime,
+    end_time: input.endTime,
+    category: input.category
+  });
+  if (error) throw new Error(error.message);
+}
+
+export async function updateScheduleTemplate(
+  userId: string,
+  input: ScheduleTemplateInput & { templateId: string }
+): Promise<void> {
+  if (isDemoMode()) {
+    updateDemoScheduleTemplate(input);
+    return;
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase
+    .from("schedule_templates")
+    .update({
+      name: input.name,
+      weekday: input.weekday,
+      start_time: input.startTime,
+      end_time: input.endTime,
+      category: input.category
+    })
+    .eq("user_id", userId)
+    .eq("id", input.templateId);
+  if (error) throw new Error(error.message);
+}
+
+export async function deleteScheduleTemplate(userId: string, templateId: string): Promise<void> {
+  if (isDemoMode()) {
+    deleteDemoScheduleTemplate(templateId);
+    return;
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase
+    .from("schedule_templates")
+    .delete()
+    .eq("user_id", userId)
+    .eq("id", templateId);
+  if (error) throw new Error(error.message);
 }
 
 export async function createScheduleEntry(input: {
@@ -83,15 +171,29 @@ export async function updateScheduleActual(input: {
   if (error) throw new Error(error.message);
 }
 
-export async function addRoutinePresetToSchedule(userId: string, date: string): Promise<void> {
+export async function addIdealScheduleToDay(userId: string, date: string): Promise<void> {
+  const templates = await listScheduleTemplates(userId);
+  const weekday = new Date(`${date}T00:00:00Z`).getUTCDay();
+  const applicable = templates.filter(
+    (template) => template.weekday === null || template.weekday === weekday
+  );
+  const blocks = applicable.map((template) => ({
+    title: template.name,
+    plannedStart: template.start_time.slice(0, 5),
+    plannedEnd: template.end_time.slice(0, 5),
+    category: template.category
+  }));
+
   if (isDemoMode()) {
-    addDemoRoutineEntries(date, PERSONAL_ROUTINE);
+    addDemoRoutineEntries(date, blocks);
     return;
   }
 
   const existingEntries = await listScheduleEntries(userId, date);
-  const existing = new Set(existingEntries.map((entry) => `${entry.planned_start}:${entry.title}`));
-  const missing = PERSONAL_ROUTINE.filter(
+  const existing = new Set(
+    existingEntries.map((entry) => `${entry.planned_start.slice(0, 5)}:${entry.title}`)
+  );
+  const missing = blocks.filter(
     (block) => !existing.has(`${block.plannedStart}:${block.title}`)
   ).map((block) => ({
     user_id: userId,
@@ -106,4 +208,33 @@ export async function addRoutinePresetToSchedule(userId: string, date: string): 
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.from("schedule_entries").insert(missing);
   if (error) throw new Error(error.message);
+}
+
+export async function importLocalIdealSchedule(userId: string): Promise<number> {
+  if (process.env.NODE_ENV === "production" || isDemoMode()) return 0;
+
+  const localTemplates = listDemoScheduleTemplates();
+  const accountTemplates = await listScheduleTemplates(userId);
+  const existing = new Set(
+    accountTemplates.map(
+      (template) => `${template.weekday ?? "daily"}:${template.start_time.slice(0, 5)}:${template.name}`
+    )
+  );
+  const missing = localTemplates.filter(
+    (template) =>
+      !existing.has(`${template.weekday ?? "daily"}:${template.start_time.slice(0, 5)}:${template.name}`)
+  ).map((template) => ({
+    user_id: userId,
+    name: template.name,
+    weekday: template.weekday,
+    start_time: template.start_time.slice(0, 5),
+    end_time: template.end_time.slice(0, 5),
+    category: template.category
+  }));
+
+  if (missing.length === 0) return 0;
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.from("schedule_templates").insert(missing);
+  if (error) throw new Error(error.message);
+  return missing.length;
 }

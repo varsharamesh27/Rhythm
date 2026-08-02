@@ -14,7 +14,7 @@ export async function getProfile(userId: string): Promise<UserProfile | null> {
   return data;
 }
 
-export async function upsertProfile(input: { userId: string; displayName: string; timezone: string }): Promise<void> {
+export async function upsertProfile(input: { userId: string; firstName: string; lastName: string; timezone: string }): Promise<void> {
   if (isDemoMode()) {
     upsertDemoProfile(input);
     return;
@@ -23,8 +23,15 @@ export async function upsertProfile(input: { userId: string; displayName: string
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.from("users").upsert({
     id: input.userId,
-    display_name: input.displayName,
+    first_name: input.firstName,
+    last_name: input.lastName,
+    display_name: `${input.firstName} ${input.lastName}`,
     timezone: input.timezone
   });
   if (error) throw new Error(error.message);
+}
+
+export async function isWorkspaceOwner(userId: string): Promise<boolean> {
+  const profile = await getProfile(userId);
+  return profile?.workspace_role === "owner";
 }
