@@ -1,13 +1,20 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { AudioWaveform, Compass, LogOut } from "lucide-react";
+import { AudioWaveform, Compass, Crown, LogOut } from "lucide-react";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { signOutAction } from "@/app/auth/sign-out";
 import { DesktopNavigation, MobileNavigation } from "@/components/layout/app-navigation";
 import { isDemoMode } from "@/lib/demo-mode";
+import { getCurrentUserId } from "@/lib/db/auth";
+import { getProfile, isWorkspaceOwner } from "@/lib/db/profile";
 
-export function AppShell({ children }: { children: ReactNode }) {
+export async function AppShell({ children }: { children: ReactNode }) {
   const demoMode = isDemoMode();
+  const userId = await getCurrentUserId();
+  const profile = userId ? await getProfile(userId) : null;
+  const isOwner = userId ? await isWorkspaceOwner(userId) : false;
+  const workspaceName = profile?.display_name?.trim() ? `${profile.display_name.trim()}'s Rhythm` : "My Rhythm";
+  const workspaceLabel = isOwner ? "Owner workspace" : "Personal ledger";
 
   return (
     <div className="min-h-screen text-foreground">
@@ -17,11 +24,11 @@ export function AppShell({ children }: { children: ReactNode }) {
             <AudioWaveform size={22} strokeWidth={1.7} />
           </span>
           <span>
-            <span className="font-display block text-xl font-bold leading-none">Rhythm</span>
-            <span className="mt-1 block text-xs text-muted-foreground">Personal ledger</span>
+            <span className="font-display block text-xl font-bold leading-none">{workspaceName}</span>
+            <span className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">{isOwner ? <Crown size={12} aria-hidden="true" /> : null}{workspaceLabel}</span>
           </span>
         </Link>
-        <DesktopNavigation />
+        <DesktopNavigation isOwner={isOwner} />
         <div className="absolute bottom-6 left-6 right-6">
           <div className="grid gap-2 border-t border-border pt-4">
             <ThemeToggle />
@@ -38,7 +45,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="flex items-center justify-between gap-3">
             <Link href="/dashboard" className="font-display flex items-center gap-2 text-lg font-bold">
               <AudioWaveform className="text-primary" size={19} />
-              Rhythm
+              {workspaceName}
             </Link>
             <div className="flex items-center gap-2">
               <ThemeToggle compact />
@@ -49,7 +56,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               </form>
             </div>
           </div>
-          <div className="mt-3"><MobileNavigation /></div>
+          <div className="mt-3"><MobileNavigation isOwner={isOwner} /></div>
         </header>
         <main className="mx-auto w-full max-w-7xl px-4 py-6 lg:px-10 lg:py-8">
           {demoMode ? <DemoBanner /> : null}

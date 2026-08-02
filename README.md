@@ -17,6 +17,8 @@ No AI model is integrated yet. Current insights are deterministic summaries from
 - Health page with recent body signals and Recharts trends
 - Insights page with non-AI summaries, goals, and weekly reviews
 - Settings page backed by the `users` profile table
+- Personalized workspace identity that uses each member's chosen name
+- Private Owner hub for the person building and operating Rhythm
 - Loading, empty, validation, and error states
 - Row-level security for user-owned data
 - Unit tests for calculation utilities and a Playwright check-in flow test
@@ -51,9 +53,23 @@ Apply migrations in Supabase SQL editor or with the Supabase CLI:
 supabase db push
 ```
 
-Run migrations in filename order. `001_initial_schema.sql` creates the profile, habit, check-in, health, schedule, goal, and review tables. `002_weekly_menu.sql` adds `weekly_menu_items` and its meal-slot enum. `003_security_hardening.sql` enforces same-user habit logs and adds indexes for user-scoped dashboard queries. `004_multi_item_weekly_menu.sql` allows multiple food items per meal and adds quantity, unit, and per-unit calorie fields.
+Run migrations in filename order. `001_initial_schema.sql` creates the profile, habit, check-in, health, schedule, goal, and review tables. `002_weekly_menu.sql` adds `weekly_menu_items` and its meal-slot enum. `003_security_hardening.sql` enforces same-user habit logs and adds indexes for user-scoped dashboard queries. `004_multi_item_weekly_menu.sql` allows multiple food items per meal and adds quantity, unit, and per-unit calorie fields. `005_owner_workspace.sql` adds the protected Owner workspace role.
 
 Every user-owned table has RLS policies using `auth.uid()`, so users can manage only their own records. A trigger creates a `public.users` profile when a Supabase auth user is created.
+
+### Make your account the Owner
+
+After signing in with the account that should operate Rhythm, open the Supabase SQL editor and run:
+
+```sql
+select id, email from auth.users;
+
+update public.users
+set workspace_role = 'owner'
+where id = 'paste-your-auth-user-id-here';
+```
+
+Refresh Rhythm. The navigation will show **Owner hub**, and your chosen name will appear across the workspace. The Owner role is intentionally personal: it does not allow reading another person's health, habit, schedule, meal, or note data.
 
 ## Seed data
 
@@ -72,7 +88,7 @@ Playwright starts a separate application server on port `3100`, resets `.playwri
 
 ## Architecture decisions
 
-- App routes live under `src/app` with readable folder names: `dashboard`, `today`, `habits`, `schedule`, `health`, `insights`, `settings`, and `login`.
+- App routes live under `src/app` with readable folder names: `dashboard`, `today`, `habits`, `schedule`, `health`, `insights`, `settings`, `owner`, and `login`.
 - Database access is isolated in `src/lib/db`; UI components call typed functions or server actions, not Supabase directly.
 - Next.js server components and server actions are the application backend. `src/lib/supabase/server.ts` creates the cookie-aware Supabase client used by that backend.
 - Supabase Auth owns accounts and sessions. Supabase PostgreSQL is the durable data store; records are associated with the authenticated user's UUID.
@@ -83,6 +99,7 @@ Playwright starts a separate application server on port `3100`, resets `.playwri
 - Zod schemas live in `src/lib/validations` and validate server action input.
 - Calculation utilities live in `src/lib/metrics` so they can be unit tested without React or Supabase.
 - Weight is shown as one health trend, not as the primary success measure. Routine, recovery, movement, nutrition, and career progress stay separate.
+- `users.workspace_role` supports a protected Owner workspace identity. It is assigned only from the database administrator context and does not bypass the existing per-user RLS policies.
 
 ## Deployment
 
@@ -91,7 +108,7 @@ For a public, multi-user release, the recommended pairing is **Vercel + Supabase
 ### Supabase
 
 1. Create a Supabase project and keep its database password in a password manager.
-2. Open the Supabase SQL editor and run every file in `supabase/migrations` in filename order, from `001_initial_schema.sql` through `004_multi_item_weekly_menu.sql`.
+2. Open the Supabase SQL editor and run every file in `supabase/migrations` in filename order, from `001_initial_schema.sql` through `005_owner_workspace.sql`.
 3. In Supabase project settings, copy the project URL and publishable/anon key.
 4. Add these variables to the chosen host's production environment:
 

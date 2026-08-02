@@ -18,6 +18,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { addDaysIso, mondayWeekStartIso, todayIso } from "@/lib/dates";
 import { getCurrentUserId } from "@/lib/db/auth";
+import { getProfile } from "@/lib/db/profile";
 import { listRecentCheckins } from "@/lib/db/checkins";
 import { listHabitLogsForRange, listHabits } from "@/lib/db/habits";
 import { listRecentScheduleEntries } from "@/lib/db/schedule";
@@ -34,12 +35,13 @@ export default async function DashboardPage() {
   const weekStart = addDaysIso(today, -6);
   const menuWeekStart = mondayWeekStartIso(today);
   const menuWeekEnd = addDaysIso(menuWeekStart, 6);
-  const [checkins, habits, habitLogs, scheduleEntries, weeklyMenuItems] = await Promise.all([
+  const [checkins, habits, habitLogs, scheduleEntries, weeklyMenuItems, profile] = await Promise.all([
     listRecentCheckins(userId, 30),
     listHabits(userId),
     listHabitLogsForRange(userId, weekStart, today),
     listRecentScheduleEntries(userId, weekStart, today),
-    listWeeklyMenuItems(userId, menuWeekStart, menuWeekEnd)
+    listWeeklyMenuItems(userId, menuWeekStart, menuWeekEnd),
+    getProfile(userId)
   ]);
   const metrics = aggregateDashboardMetrics(checkins);
   const trackedHabitCompletion = habitCompletionForWeek(habits, habitLogs);
@@ -53,7 +55,7 @@ export default async function DashboardPage() {
         <header className="border-b border-border pb-6 sm:flex sm:items-end sm:justify-between sm:gap-6">
           <div>
             <p className="mb-2 text-sm font-medium text-muted-foreground">Overview · {formatDashboardDate(today)}</p>
-            <h1 className="font-display text-4xl font-semibold">Dashboard</h1>
+            <h1 className="font-display text-4xl font-semibold">{profile?.display_name?.trim() ? `Welcome back, ${profile.display_name.trim()}` : "Your dashboard"}</h1>
             <p className="mt-2 max-w-2xl text-muted-foreground">A measured view of routine, recovery, movement, nutrition, and career.</p>
           </div>
           <div className="mt-4 flex flex-wrap gap-2 sm:mt-0">

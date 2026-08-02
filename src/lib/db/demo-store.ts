@@ -336,7 +336,7 @@ export function upsertDemoWeeklyReview(input: Omit<WeeklyReview, "id" | "created
 
 function createSeedState(): DemoState {
   return {
-    profile: { id: DEMO_USER_ID, display_name: null, timezone: "America/New_York", created_at: new Date().toISOString() },
+    profile: { id: DEMO_USER_ID, display_name: null, timezone: "America/New_York", workspace_role: "member", created_at: new Date().toISOString() },
     habits: [],
     habitLogs: [],
     checkins: [],

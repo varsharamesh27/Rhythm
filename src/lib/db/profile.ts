@@ -28,3 +28,8 @@ export async function upsertProfile(input: { userId: string; displayName: string
   });
   if (error) throw new Error(error.message);
 }
+
+export async function isWorkspaceOwner(userId: string): Promise<boolean> {
+  const profile = await getProfile(userId);
+  return profile?.workspace_role === "owner";
+}

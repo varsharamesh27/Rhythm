@@ -17,19 +17,21 @@ export default async function SettingsPage() {
     <AppShell>
       <div className="grid gap-6">
         <div>
-          <h1 className="font-display text-4xl font-semibold">Settings</h1>
-          <p className="mt-2 max-w-2xl text-muted-foreground">Set the name and timezone used across your personal workspace.</p>
+          <h1 className="font-display text-4xl font-semibold">Your Rhythm</h1>
+          <p className="mt-2 max-w-2xl text-muted-foreground">Set the identity and timezone used across your personal workspace.</p>
         </div>
         <Card className="max-w-xl">
-          <CardHeader><CardTitle>Profile</CardTitle></CardHeader>
+          <CardHeader><CardTitle>Workspace identity</CardTitle></CardHeader>
           <CardContent>
+            <p className="mb-5 text-sm text-muted-foreground">Your name personalizes the dashboard and navigation.</p>
             <form action={saveSettingsAction} className="grid gap-4">
-              <Label>Display name<Input name="displayName" defaultValue={profile?.display_name ?? ""} placeholder="Your name" required /></Label>
+              <Label>Your name<Input name="displayName" defaultValue={profile?.display_name ?? ""} placeholder="Your name" required /></Label>
               <Label>Timezone<Input name="timezone" defaultValue={profile?.timezone ?? "America/New_York"} required /></Label>
               <Button type="submit">Save settings</Button>
             </form>
           </CardContent>
         </Card>
+        {profile?.workspace_role === "owner" ? <p className="text-sm font-medium text-accent">Owner workspace active</p> : null}
       </div>
     </AppShell>
   );
