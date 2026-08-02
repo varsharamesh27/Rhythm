@@ -28,6 +28,8 @@ No AI model is integrated yet. Current insights are deterministic summaries from
 
 The repository includes a project-local Node runtime for Windows. In VS Code, use **Terminal > Run Task > Rhythm: Start local app**. The task keeps the server in a dedicated terminal and avoids depending on a global Node installation. It uses `127.0.0.1`, matching the local URL used by Supabase email links.
 
+The VS Code task writes development assets to `.next-dev`; production builds keep using `.next`, and Playwright uses `.next-e2e`. These separate folders prevent a build or test run from invalidating the CSS of an active local app.
+
 Alternatively, install Node.js 20 or newer and run:
 
 ```powershell

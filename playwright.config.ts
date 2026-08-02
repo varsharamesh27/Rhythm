@@ -18,6 +18,7 @@ export default defineConfig({
     command: devCommand,
     env: {
       RHYTHM_DEMO_DATA_PATH: ".playwright-demo-data.json",
+      NEXT_DIST_DIR: ".next-e2e",
       SUPABASE_ANON_KEY: "",
       SUPABASE_URL: ""
     },
