@@ -2,6 +2,8 @@ import { z } from "zod";
 
 export const authEmailSchema = z.string().trim().email("Enter a valid email address.");
 
+const personNameSchema = z.string().trim().min(1, "Enter a name.").max(80, "Names must contain 80 characters or fewer.");
+
 const passwordSchema = z
   .string()
   .min(8, "Password must contain at least 8 characters.")
@@ -14,6 +16,8 @@ export const passwordSignInSchema = z.object({
 
 export const passwordSignUpSchema = z
   .object({
+    firstName: personNameSchema,
+    lastName: personNameSchema,
     email: authEmailSchema,
     password: passwordSchema,
     confirmPassword: z.string()

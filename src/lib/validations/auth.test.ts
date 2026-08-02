@@ -18,11 +18,22 @@ describe("account validation", () => {
 
   it("requires matching passwords for signup", () => {
     expect(passwordSignUpSchema.safeParse({
+      firstName: "Varsha",
+      lastName: "Balasubramaniam",
       email: "person@example.com",
       password: "private-password",
       confirmPassword: "private-password"
     }).success).toBe(true);
     expect(passwordSignUpSchema.safeParse({
+      firstName: "",
+      lastName: "Balasubramaniam",
+      email: "person@example.com",
+      password: "private-password",
+      confirmPassword: "private-password"
+    }).success).toBe(false);
+    expect(passwordSignUpSchema.safeParse({
+      firstName: "Varsha",
+      lastName: "Balasubramaniam",
       email: "person@example.com",
       password: "private-password",
       confirmPassword: "different-password"

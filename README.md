@@ -18,6 +18,7 @@ No AI model is integrated yet. Current insights are deterministic summaries from
 - Insights page with non-AI summaries, goals, and weekly reviews
 - Settings page backed by the `users` profile table
 - Personalized workspace identity that uses each member's chosen name
+- First-name and last-name registration; names are never derived from email addresses
 - Private Owner hub for the person building and operating Rhythm
 - Loading, empty, validation, and error states
 - Row-level security for user-owned data
@@ -53,9 +54,15 @@ Apply migrations in Supabase SQL editor or with the Supabase CLI:
 supabase db push
 ```
 
-Run migrations in filename order. `001_initial_schema.sql` creates the profile, habit, check-in, health, schedule, goal, and review tables. `002_weekly_menu.sql` adds `weekly_menu_items` and its meal-slot enum. `003_security_hardening.sql` enforces same-user habit logs and adds indexes for user-scoped dashboard queries. `004_multi_item_weekly_menu.sql` allows multiple food items per meal and adds quantity, unit, and per-unit calorie fields. `005_owner_workspace.sql` adds the protected Owner workspace role.
+Run migrations in filename order. `001_initial_schema.sql` creates the profile, habit, check-in, health, schedule, goal, and review tables. `002_weekly_menu.sql` adds `weekly_menu_items` and its meal-slot enum. `003_security_hardening.sql` enforces same-user habit logs and adds indexes for user-scoped dashboard queries. `004_multi_item_weekly_menu.sql` allows multiple food items per meal and adds quantity, unit, and per-unit calorie fields. `005_owner_workspace.sql` adds the protected Owner workspace role. `006_profile_names.sql` stores intentional first and last names for profile personalization.
 
 Every user-owned table has RLS policies using `auth.uid()`, so users can manage only their own records. A trigger creates a `public.users` profile when a Supabase auth user is created.
+
+### Profile names
+
+New accounts must enter a first name and last name during registration. Rhythm stores those fields and uses only the first name for workspace greetings. It never creates a name from an email address.
+
+For an existing account, apply `006_profile_names.sql`, sign in, open **Your Rhythm**, and save your name there. Your name remains in your private Supabase profile rather than in this repository.
 
 ### Make your account the Owner
 
@@ -108,7 +115,7 @@ For a public, multi-user release, the recommended pairing is **Vercel + Supabase
 ### Supabase
 
 1. Create a Supabase project and keep its database password in a password manager.
-2. Open the Supabase SQL editor and run every file in `supabase/migrations` in filename order, from `001_initial_schema.sql` through `005_owner_workspace.sql`.
+2. Open the Supabase SQL editor and run every file in `supabase/migrations` in filename order, from `001_initial_schema.sql` through `006_profile_names.sql`.
 3. In Supabase project settings, copy the project URL and publishable/anon key.
 4. Add these variables to the chosen host's production environment:
 

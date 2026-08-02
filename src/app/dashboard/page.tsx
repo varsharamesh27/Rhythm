@@ -55,7 +55,7 @@ export default async function DashboardPage() {
         <header className="border-b border-border pb-6 sm:flex sm:items-end sm:justify-between sm:gap-6">
           <div>
             <p className="mb-2 text-sm font-medium text-muted-foreground">Overview · {formatDashboardDate(today)}</p>
-            <h1 className="font-display text-4xl font-semibold">{profile?.display_name?.trim() ? `Welcome back, ${profile.display_name.trim()}` : "Your dashboard"}</h1>
+            <h1 className="font-display text-4xl font-semibold">{profile?.first_name?.trim() ? `Welcome back, ${profile.first_name.trim()}` : "Your dashboard"}</h1>
             <p className="mt-2 max-w-2xl text-muted-foreground">A measured view of routine, recovery, movement, nutrition, and career.</p>
           </div>
           <div className="mt-4 flex flex-wrap gap-2 sm:mt-0">

@@ -25,7 +25,7 @@ export default async function OwnerPage() {
   const userId = await getCurrentUserId();
   if (!userId || !(await isWorkspaceOwner(userId))) redirect("/dashboard");
   const profile = await getProfile(userId);
-  const name = profile?.display_name?.trim() || "Owner";
+  const name = profile?.first_name?.trim() || "Owner";
 
   return (
     <AppShell>

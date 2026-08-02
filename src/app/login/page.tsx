@@ -126,6 +126,10 @@ export default async function LoginPage({
 
             {supabaseConfigured && mode === "signup" ? (
               <form action={signUpWithPassword} className="grid gap-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Label>First name<Input name="firstName" autoComplete="given-name" required placeholder="First name" /></Label>
+                  <Label>Last name<Input name="lastName" autoComplete="family-name" required placeholder="Last name" /></Label>
+                </div>
                 <Label>Email address<Input name="email" type="email" autoComplete="email" required placeholder="you@example.com" /></Label>
                 <Label>Choose password<Input name="password" type="password" autoComplete="new-password" minLength={8} required /></Label>
                 <Label>Confirm password<Input name="confirmPassword" type="password" autoComplete="new-password" minLength={8} required /></Label>
