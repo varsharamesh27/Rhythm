@@ -44,6 +44,8 @@ export async function signInWithPassword(formData: FormData) {
 export async function signUpWithPassword(formData: FormData) {
   requireSupabase();
   const parsed = passwordSignUpSchema.safeParse({
+    firstName: formData.get("firstName"),
+    lastName: formData.get("lastName"),
     email: formData.get("email"),
     password: formData.get("password"),
     confirmPassword: formData.get("confirmPassword")
@@ -57,6 +59,10 @@ export async function signUpWithPassword(formData: FormData) {
     email: parsed.data.email.toLowerCase(),
     password: parsed.data.password,
     options: {
+      data: {
+        first_name: parsed.data.firstName,
+        last_name: parsed.data.lastName
+      },
       emailRedirectTo: authCallbackUrl("/dashboard")
     }
   });

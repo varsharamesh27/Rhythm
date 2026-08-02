@@ -21,6 +21,8 @@ type Table<Row extends DbRecord, Insert extends DbRecord, Update extends DbRecor
 
 export type UserProfile = DbRecord & {
   id: string;
+  first_name: string | null;
+  last_name: string | null;
   display_name: string | null;
   timezone: string;
   workspace_role: WorkspaceRole;

@@ -13,7 +13,7 @@ export async function AppShell({ children }: { children: ReactNode }) {
   const userId = await getCurrentUserId();
   const profile = userId ? await getProfile(userId) : null;
   const isOwner = userId ? await isWorkspaceOwner(userId) : false;
-  const workspaceName = profile?.display_name?.trim() ? `${profile.display_name.trim()}'s Rhythm` : "My Rhythm";
+  const workspaceName = profile?.first_name?.trim() ? `${profile.first_name.trim()}'s Rhythm` : "My Rhythm";
   const workspaceLabel = isOwner ? "Owner workspace" : "Personal ledger";
 
   return (

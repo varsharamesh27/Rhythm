@@ -23,9 +23,12 @@ export default async function SettingsPage() {
         <Card className="max-w-xl">
           <CardHeader><CardTitle>Workspace identity</CardTitle></CardHeader>
           <CardContent>
-            <p className="mb-5 text-sm text-muted-foreground">Your name personalizes the dashboard and navigation.</p>
+            <p className="mb-5 text-sm text-muted-foreground">Your first name personalizes the dashboard and navigation. Your email is never used as your name.</p>
             <form action={saveSettingsAction} className="grid gap-4">
-              <Label>Your name<Input name="displayName" defaultValue={profile?.display_name ?? ""} placeholder="Your name" required /></Label>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Label>First name<Input name="firstName" defaultValue={profile?.first_name ?? ""} autoComplete="given-name" required /></Label>
+                <Label>Last name<Input name="lastName" defaultValue={profile?.last_name ?? ""} autoComplete="family-name" required /></Label>
+              </div>
               <Label>Timezone<Input name="timezone" defaultValue={profile?.timezone ?? "America/New_York"} required /></Label>
               <Button type="submit">Save settings</Button>
             </form>

@@ -286,9 +286,15 @@ export function getDemoProfile(): UserProfile {
   return readDemoState().profile;
 }
 
-export function upsertDemoProfile(input: { displayName: string; timezone: string }): void {
+export function upsertDemoProfile(input: { firstName: string; lastName: string; timezone: string }): void {
   const state = readDemoState();
-  state.profile = { ...state.profile, display_name: input.displayName, timezone: input.timezone };
+  state.profile = {
+    ...state.profile,
+    first_name: input.firstName,
+    last_name: input.lastName,
+    display_name: `${input.firstName} ${input.lastName}`,
+    timezone: input.timezone
+  };
   writeDemoState(state);
 }
 
@@ -336,7 +342,7 @@ export function upsertDemoWeeklyReview(input: Omit<WeeklyReview, "id" | "created
 
 function createSeedState(): DemoState {
   return {
-    profile: { id: DEMO_USER_ID, display_name: null, timezone: "America/New_York", workspace_role: "member", created_at: new Date().toISOString() },
+    profile: { id: DEMO_USER_ID, first_name: null, last_name: null, display_name: null, timezone: "America/New_York", workspace_role: "member", created_at: new Date().toISOString() },
     habits: [],
     habitLogs: [],
     checkins: [],
