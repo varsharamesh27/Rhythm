@@ -23,7 +23,7 @@ No AI model is integrated yet. Current insights are deterministic summaries from
 
 ## Local setup
 
-The repository includes a project-local Node runtime for Windows. In VS Code, use **Terminal > Run Task > Rhythm: Start local app**. The task keeps the server in a dedicated terminal and avoids depending on a global Node installation.
+The repository includes a project-local Node runtime for Windows. In VS Code, use **Terminal > Run Task > Rhythm: Start local app**. The task keeps the server in a dedicated terminal and avoids depending on a global Node installation. It uses `127.0.0.1`, matching the local URL used by Supabase email links.
 
 Alternatively, install Node.js 20 or newer and run:
 
@@ -33,14 +33,14 @@ copy .env.example .env.local
 npm run dev
 ```
 
-Open `http://localhost:3000`.
+Open `http://127.0.0.1:3000`.
 
 ## Environment variables
 
 ```text
 SUPABASE_URL=your Supabase project URL
 SUPABASE_ANON_KEY=your Supabase publishable or anon key
-SITE_URL=http://localhost:3000
+SITE_URL=http://127.0.0.1:3000
 ```
 
 ## Database setup
@@ -104,12 +104,12 @@ SITE_URL=https://your-production-domain.example
 5. For local development, open **Authentication > URL Configuration** and set these exact values:
 
 ```text
-Site URL: http://localhost:3000
-Redirect URL: http://localhost:3000/auth/callback
-Redirect URL: http://localhost:3000/auth/confirm
+Site URL: http://127.0.0.1:3000
+Redirect URL: http://127.0.0.1:3000/auth/callback
+Redirect URL: http://127.0.0.1:3000/auth/confirm
 ```
 
-Use `http://localhost:3000` consistently during local development; browser cookies treat `localhost` and `127.0.0.1` as different sites. For production, replace all three origins with the deployed HTTPS domain and set the same domain in the host's `SITE_URL` variable.
+Use `http://127.0.0.1:3000` consistently during local development; browser cookies treat `localhost` and `127.0.0.1` as different sites. For production, replace all three origins with the deployed HTTPS domain and set the same domain in the host's `SITE_URL` variable.
 
 6. In **Authentication > Sign In / Providers > Email**, enable email/password signup and keep email confirmation enabled for public use.
 7. In **Authentication > Email Templates > Confirm signup**, use this link:

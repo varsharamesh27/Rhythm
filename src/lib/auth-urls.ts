@@ -3,7 +3,7 @@ type AuthUrlEnvironment = {
   readonly SITE_URL?: string;
 };
 
-const LOCAL_SITE_URL = "http://localhost:3000";
+const LOCAL_SITE_URL = "http://127.0.0.1:3000";
 
 export function getSiteOrigin(environment: AuthUrlEnvironment = process.env): string {
   const configuredUrl = environment.SITE_URL?.trim();

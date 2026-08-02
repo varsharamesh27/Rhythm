@@ -8,12 +8,12 @@ import {
 
 describe("authentication URLs", () => {
   it("uses one canonical origin and removes configured paths", () => {
-    expect(getSiteOrigin({ SITE_URL: "http://localhost:3000/some/path" })).toBe("http://localhost:3000");
+    expect(getSiteOrigin({ SITE_URL: "http://127.0.0.1:3000/some/path" })).toBe("http://127.0.0.1:3000");
   });
 
   it("builds encoded callback URLs", () => {
-    expect(buildAuthUrl("/auth/callback", { next: "/reset-password" }, { SITE_URL: "http://localhost:3000" })).toBe(
-      "http://localhost:3000/auth/callback?next=%2Freset-password"
+    expect(buildAuthUrl("/auth/callback", { next: "/reset-password" }, { SITE_URL: "http://127.0.0.1:3000" })).toBe(
+      "http://127.0.0.1:3000/auth/callback?next=%2Freset-password"
     );
   });
 
@@ -27,21 +27,21 @@ describe("authentication URLs", () => {
     expect(() => getSiteOrigin({ NODE_ENV: "production", SITE_URL: "http://example.com" })).toThrow("https");
   });
 
-  it("keeps local authentication on the configured localhost origin", () => {
-    expect(
-      canonicalLocalDevelopmentUrl(
-        "127.0.0.1:3000",
-        "/login",
-        "?mode=signup",
-        { NODE_ENV: "development", SITE_URL: "http://localhost:3000" }
-      )
-    ).toBe("http://localhost:3000/login?mode=signup");
+  it("keeps local authentication on the configured loopback origin", () => {
     expect(
       canonicalLocalDevelopmentUrl(
         "localhost:3000",
         "/login",
+        "?mode=signup",
+        { NODE_ENV: "development", SITE_URL: "http://127.0.0.1:3000" }
+      )
+    ).toBe("http://127.0.0.1:3000/login?mode=signup");
+    expect(
+      canonicalLocalDevelopmentUrl(
+        "127.0.0.1:3000",
+        "/login",
         "",
-        { NODE_ENV: "development", SITE_URL: "http://localhost:3000" }
+        { NODE_ENV: "development", SITE_URL: "http://127.0.0.1:3000" }
       )
     ).toBeNull();
   });
