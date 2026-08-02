@@ -14,10 +14,7 @@
         "3000"
       ],
       "options": {
-        "cwd": "${workspaceFolder}",
-        "env": {
-          "NEXT_DIST_DIR": ".next-dev"
-        }
+        "cwd": "${workspaceFolder}"
       },
       "isBackground": true,
       "problemMatcher": [],
