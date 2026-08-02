@@ -10,6 +10,7 @@ import {
   HeartPulse,
   Home,
   ListChecks,
+  ShieldCheck,
   Settings,
   UtensilsCrossed
 } from "lucide-react";
@@ -21,7 +22,7 @@ type NavItem = {
   icon: ComponentType<{ size?: number; className?: string }>;
 };
 
-const navGroups: Array<{ label: string; items: NavItem[] }> = [
+const baseNavGroups: Array<{ label: string; items: NavItem[] }> = [
   {
     label: "Daily",
     items: [
@@ -47,14 +48,18 @@ const navGroups: Array<{ label: string; items: NavItem[] }> = [
   }
 ];
 
-const allItems = navGroups.flatMap((group) => group.items);
+function navGroups(isOwner: boolean): Array<{ label: string; items: NavItem[] }> {
+  if (!isOwner) return baseNavGroups;
+  return [...baseNavGroups, { label: "Owner", items: [{ href: "/owner", label: "Owner hub", icon: ShieldCheck }] }];
+}
 
-export function DesktopNavigation() {
+export function DesktopNavigation({ isOwner = false }: { isOwner?: boolean }) {
   const pathname = usePathname();
+  const groups = navGroups(isOwner);
 
   return (
     <nav className="grid gap-7" aria-label="Primary navigation">
-      {navGroups.map((group) => (
+      {groups.map((group) => (
         <div className="grid gap-1" key={group.label}>
           <p className="px-3 text-xs font-semibold text-muted-foreground">
             {group.label}
@@ -68,8 +73,9 @@ export function DesktopNavigation() {
   );
 }
 
-export function MobileNavigation() {
+export function MobileNavigation({ isOwner = false }: { isOwner?: boolean }) {
   const pathname = usePathname();
+  const allItems = navGroups(isOwner).flatMap((group) => group.items);
 
   return (
     <nav className="flex gap-2 overflow-x-auto pb-1" aria-label="Mobile navigation">

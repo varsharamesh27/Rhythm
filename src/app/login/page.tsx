@@ -46,8 +46,8 @@ export default async function LoginPage({
             <span className="font-display text-2xl font-bold">Rhythm</span>
           </div>
           <div className="max-w-xs border-t border-background/25 pt-7">
-            <p className="font-display text-3xl leading-tight">Small steps, kept faithfully.</p>
-            <p className="mt-4 text-sm text-background/65">Your records stay connected to your private account.</p>
+            <p className="font-display text-3xl leading-tight">Build a life with a rhythm that feels like yours.</p>
+            <p className="mt-4 text-sm text-background/65">A private place for your routines, recovery, movement, meals, and growth.</p>
           </div>
         </aside>
 
@@ -57,7 +57,7 @@ export default async function LoginPage({
             <span className="font-display text-xl font-bold">Rhythm</span>
           </div>
 
-          <p className="mb-2 text-sm font-medium text-muted-foreground">Private personal ledger</p>
+          <p className="mb-2 text-sm font-medium text-muted-foreground">Your private rhythm</p>
           <h1 className="font-display text-3xl font-semibold">
             {databaseSetupRequired
               ? "Finish database setup"
@@ -74,7 +74,7 @@ export default async function LoginPage({
                 ? "Choose the credentials that will protect and preserve your workspace."
                 : mode === "forgot"
                   ? "Supabase will send a secure reset link to the account email."
-                  : "Continue with the email and password you chose when creating your account."}
+                : "Continue with the email and password that keep your Rhythm personal to you."}
           </p>
 
           <div className="mt-8 grid gap-6">

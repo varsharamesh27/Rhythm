@@ -1,6 +1,7 @@
 export type HabitCategory = "routine" | "recovery" | "movement" | "nutrition" | "career";
 export type GoalStatus = "active" | "paused" | "completed";
 export type MealSlot = "breakfast" | "forenoon" | "lunch" | "evening" | "dinner";
+export type WorkspaceRole = "member" | "owner";
 
 export type ScheduleBlockInput = {
   title: string;
@@ -22,6 +23,7 @@ export type UserProfile = DbRecord & {
   id: string;
   display_name: string | null;
   timezone: string;
+  workspace_role: WorkspaceRole;
   created_at: string;
 };
 
