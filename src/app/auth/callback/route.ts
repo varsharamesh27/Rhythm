@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { hasSupabaseConfiguration } from "@/lib/demo-mode";
 import { getAuthCallbackErrorMessage } from "@/lib/auth-errors";
 import { buildAuthUrl, safeNextPath } from "@/lib/auth-urls";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseRouteClient } from "@/lib/supabase/route";
 
 export const dynamic = "force-dynamic";
 
@@ -22,14 +22,15 @@ export async function GET(request: NextRequest) {
     return noStoreRedirect(loginMessage("The account link is invalid or has expired. Request a new one."));
   }
 
-  const supabase = await createSupabaseServerClient();
+  const auth = createSupabaseRouteClient(request);
+  const { supabase } = auth;
   const { error } = await supabase.auth.exchangeCodeForSession(code);
   if (error) {
     console.error("Supabase auth callback failed", { code: error.code, status: error.status, message: error.message });
     return noStoreRedirect(loginMessage(getAuthCallbackErrorMessage(error)));
   }
 
-  return noStoreRedirect(buildAuthUrl(next));
+  return auth.redirect(buildAuthUrl(next));
 }
 
 function loginMessage(message: string): string {

@@ -2,7 +2,7 @@ import { type EmailOtpType } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
 import { hasSupabaseConfiguration } from "@/lib/demo-mode";
 import { buildAuthUrl, safeNextPath } from "@/lib/auth-urls";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseRouteClient } from "@/lib/supabase/route";
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +28,8 @@ export async function GET(request: NextRequest) {
     return noStoreRedirect(loginMessage("The account link is invalid or has expired. Request a new one."));
   }
 
-  const supabase = await createSupabaseServerClient();
+  const auth = createSupabaseRouteClient(request);
+  const { supabase } = auth;
   const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type });
   if (error) {
     console.error("Supabase token confirmation failed", { code: error.code, status: error.status, message: error.message, type });
@@ -38,7 +39,7 @@ export async function GET(request: NextRequest) {
   const fallback = type === "recovery" ? "/reset-password" : "/dashboard";
   const requestedNext = safeNextPath(request.nextUrl.searchParams.get("next"), fallback);
   const next = type === "recovery" ? "/reset-password" : requestedNext;
-  return noStoreRedirect(buildAuthUrl(next));
+  return auth.redirect(buildAuthUrl(next));
 }
 
 function isEmailOtpType(value: string | null): value is EmailOtpType {
