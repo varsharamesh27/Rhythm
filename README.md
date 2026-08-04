@@ -117,7 +117,7 @@ For a public, multi-user release, the recommended pairing is **Vercel + Supabase
 ### Supabase
 
 1. Create a Supabase project and keep its database password in a password manager.
-2. Open the Supabase SQL editor and run every file in `supabase/migrations` in filename order, from `001_initial_schema.sql` through `006_profile_names.sql`.
+2. Open the Supabase SQL editor and run every file in `supabase/migrations` in filename order, from `001_initial_schema.sql` through `007_opt_in_leaderboard.sql`.
 3. In Supabase project settings, copy the project URL and publishable/anon key.
 4. Add these variables to the chosen host's production environment:
 

@@ -10,6 +10,7 @@ import {
   HeartPulse,
   Home,
   ListChecks,
+  Trophy,
   ShieldCheck,
   Settings,
   UtensilsCrossed
@@ -41,6 +42,7 @@ const baseNavGroups: Array<{ label: string; items: NavItem[] }> = [
   {
     label: "Review",
     items: [
+      { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
       { href: "/health", label: "Health", icon: HeartPulse },
       { href: "/insights", label: "Insights", icon: ChartNoAxesColumnIncreasing },
       { href: "/settings", label: "Settings", icon: Settings }

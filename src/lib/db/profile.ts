@@ -14,7 +14,7 @@ export async function getProfile(userId: string): Promise<UserProfile | null> {
   return data;
 }
 
-export async function upsertProfile(input: { userId: string; firstName: string; lastName: string; timezone: string }): Promise<void> {
+export async function upsertProfile(input: { userId: string; firstName: string; lastName: string; timezone: string; leaderboardOptIn: boolean; leaderboardName?: string }): Promise<void> {
   if (isDemoMode()) {
     upsertDemoProfile(input);
     return;
@@ -26,7 +26,9 @@ export async function upsertProfile(input: { userId: string; firstName: string; 
     first_name: input.firstName,
     last_name: input.lastName,
     display_name: `${input.firstName} ${input.lastName}`,
-    timezone: input.timezone
+    timezone: input.timezone,
+    leaderboard_opt_in: input.leaderboardOptIn,
+    leaderboard_name: input.leaderboardOptIn ? input.leaderboardName : null
   });
   if (error) throw new Error(error.message);
 }

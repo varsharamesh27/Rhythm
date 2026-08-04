@@ -17,5 +17,6 @@ coverage
 .tools
 .next-dev.*.log
 .next-dev.log
+.rhythm-*.log
 .demo-data.json
 .playwright-demo-data.json

@@ -42,6 +42,11 @@ export function readDemoState(): DemoState {
   const state = JSON.parse(readFileSync(STORE_PATH, "utf8")) as DemoState;
   return {
     ...state,
+    profile: {
+      ...state.profile,
+      leaderboard_opt_in: state.profile.leaderboard_opt_in ?? false,
+      leaderboard_name: state.profile.leaderboard_name ?? null
+    },
     scheduleTemplates: state.scheduleTemplates ?? [],
     weeklyMenuItems: state.weeklyMenuItems ?? []
   };
@@ -286,14 +291,16 @@ export function getDemoProfile(): UserProfile {
   return readDemoState().profile;
 }
 
-export function upsertDemoProfile(input: { firstName: string; lastName: string; timezone: string }): void {
+export function upsertDemoProfile(input: { firstName: string; lastName: string; timezone: string; leaderboardOptIn: boolean; leaderboardName?: string }): void {
   const state = readDemoState();
   state.profile = {
     ...state.profile,
     first_name: input.firstName,
     last_name: input.lastName,
     display_name: `${input.firstName} ${input.lastName}`,
-    timezone: input.timezone
+    timezone: input.timezone,
+    leaderboard_opt_in: input.leaderboardOptIn,
+    leaderboard_name: input.leaderboardOptIn ? input.leaderboardName ?? null : null
   };
   writeDemoState(state);
 }
@@ -342,7 +349,7 @@ export function upsertDemoWeeklyReview(input: Omit<WeeklyReview, "id" | "created
 
 function createSeedState(): DemoState {
   return {
-    profile: { id: DEMO_USER_ID, first_name: null, last_name: null, display_name: null, timezone: "America/New_York", workspace_role: "member", created_at: new Date().toISOString() },
+    profile: { id: DEMO_USER_ID, first_name: null, last_name: null, display_name: null, timezone: "America/New_York", workspace_role: "member", leaderboard_opt_in: false, leaderboard_name: null, created_at: new Date().toISOString() },
     habits: [],
     habitLogs: [],
     checkins: [],
