@@ -3,7 +3,6 @@
   "main": ".open-next/worker.js",
   "name": "rhythm-personal-tracker",
   "compatibility_date": "2026-07-27",
-  "compatibility_flags": ["nodejs_compat"],
   "assets": {
     "binding": "ASSETS",
     "directory": ".open-next/assets"
