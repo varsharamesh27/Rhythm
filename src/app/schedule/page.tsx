@@ -11,7 +11,7 @@ import { todayIso } from "@/lib/dates";
 import { isDemoMode } from "@/lib/demo-mode";
 import { getCurrentUserId } from "@/lib/db/auth";
 import { listScheduleEntries, listScheduleTemplates } from "@/lib/db/schedule";
-import { calculateScheduleAdherence, plannedMinutes } from "@/lib/metrics/schedule";
+import { applicableScheduleTemplatesForDate, calculateScheduleAdherence, plannedMinutes } from "@/lib/metrics/schedule";
 import { cn } from "@/lib/utils";
 import type { HabitCategory, ScheduleEntry, ScheduleTemplate } from "@/types/database";
 import {
@@ -60,10 +60,7 @@ export default async function SchedulePage({
     listScheduleEntries(userId, date),
     listScheduleTemplates(userId)
   ]);
-  const weekday = new Date(`${date}T00:00:00Z`).getUTCDay();
-  const applicableTemplates = templates.filter(
-    (template) => template.weekday === null || template.weekday === weekday
-  );
+  const applicableTemplates = applicableScheduleTemplatesForDate(templates, date);
   const demoMode = isDemoMode();
   const ownerLabel = demoMode ? "this local demo workspace" : "the signed-in account";
   const showLocalImport = process.env.NODE_ENV !== "production" && !demoMode;
@@ -327,7 +324,7 @@ function IdealSchedule({
                         <Label>
                           Applies
                           <Select name="weekday" defaultValue={template.weekday?.toString() ?? ""}>
-                            {weekdays.map((day) => <option key={day.value} value={day.value}>{day.label}</option>)}
+                            {weekdays.filter((day) => day.value !== "6").map((day) => <option key={day.value} value={day.value}>{day.label}</option>)}
                           </Select>
                         </Label>
                         <Label>
@@ -373,7 +370,7 @@ function IdealSchedule({
               <Label>
                 Applies
                 <Select name="weekday" defaultValue="">
-                  {weekdays.map((day) => <option key={day.value} value={day.value}>{day.label}</option>)}
+                  {weekdays.filter((day) => day.value !== "6").map((day) => <option key={day.value} value={day.value}>{day.label}</option>)}
                 </Select>
               </Label>
               <Label>
