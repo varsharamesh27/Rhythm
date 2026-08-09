@@ -20,4 +20,5 @@ export async function saveSettingsAction(formData: FormData): Promise<void> {
   await upsertProfile({ userId, ...parsed.data });
   revalidatePath("/settings");
   revalidatePath("/leaderboard");
+  redirect("/settings?saved=1#leaderboard");
 }
