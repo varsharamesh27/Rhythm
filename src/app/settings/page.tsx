@@ -30,6 +30,17 @@ export default async function SettingsPage() {
                 <Label>Last name<Input name="lastName" defaultValue={profile?.last_name ?? ""} autoComplete="family-name" required /></Label>
               </div>
               <Label>Timezone<Input name="timezone" defaultValue={profile?.timezone ?? "America/New_York"} required /></Label>
+              <section className="grid gap-4 border-t border-border pt-5" id="leaderboard">
+                <div>
+                  <h2 className="font-display text-lg font-semibold">Community leaderboard</h2>
+                  <p className="mt-1 text-sm leading-6 text-muted-foreground">Opt in to share only your public name and aggregate weekly progress. Your private entries and health details stay private.</p>
+                </div>
+                <Label>Public leaderboard name<Input name="leaderboardName" defaultValue={profile?.leaderboard_name ?? profile?.first_name ?? ""} minLength={2} maxLength={40} placeholder="How others will know you" /></Label>
+                <label className="flex cursor-pointer items-start gap-3 rounded-md border border-border bg-muted/50 p-4 text-sm">
+                  <input className="mt-1 size-4 accent-[hsl(var(--primary))]" name="leaderboardOptIn" type="checkbox" defaultChecked={profile?.leaderboard_opt_in ?? false} />
+                  <span><span className="block font-semibold text-foreground">Show me on the weekly leaderboard</span><span className="mt-1 block leading-5 text-muted-foreground">You can leave at any time. Opting out removes your row from the shared ranking.</span></span>
+                </label>
+              </section>
               <Button type="submit">Save settings</Button>
             </form>
           </CardContent>

@@ -26,7 +26,19 @@ export type UserProfile = DbRecord & {
   display_name: string | null;
   timezone: string;
   workspace_role: WorkspaceRole;
+  leaderboard_opt_in: boolean;
+  leaderboard_name: string | null;
   created_at: string;
+};
+
+export type LeaderboardEntry = {
+  rank: number;
+  user_id: string;
+  public_name: string;
+  weekly_score: number;
+  habit_completions: number;
+  habit_target: number;
+  checkin_days: number;
 };
 
 export type Habit = DbRecord & {
@@ -159,7 +171,12 @@ export type Database = {
       weekly_menu_items: Table<WeeklyMenuItem, WeeklyMenuItemInsert, Partial<WeeklyMenuItem>>;
     };
     Views: { [_ in never]: never };
-    Functions: { [_ in never]: never };
+    Functions: {
+      get_weekly_leaderboard: {
+        Args: Record<PropertyKey, never>;
+        Returns: LeaderboardEntry[];
+      };
+    };
     Enums: {
       habit_category: HabitCategory;
       meal_slot: MealSlot;

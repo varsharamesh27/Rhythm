@@ -28,6 +28,8 @@ No AI model is integrated yet. Current insights are deterministic summaries from
 
 The repository includes a project-local Node runtime for Windows. In VS Code, use **Terminal > Run Task > Rhythm: Start local app**. The task keeps the server in a dedicated terminal and avoids depending on a global Node installation. It uses `127.0.0.1`, matching the local URL used by Supabase email links.
 
+The VS Code task writes development assets to `.next-dev`; production builds keep using `.next`, and Playwright uses `.next-e2e`. These separate folders prevent a build or test run from invalidating the CSS of an active local app.
+
 Alternatively, install Node.js 20 or newer and run:
 
 ```powershell
@@ -115,7 +117,7 @@ For a public, multi-user release, the recommended pairing is **Vercel + Supabase
 ### Supabase
 
 1. Create a Supabase project and keep its database password in a password manager.
-2. Open the Supabase SQL editor and run every file in `supabase/migrations` in filename order, from `001_initial_schema.sql` through `006_profile_names.sql`.
+2. Open the Supabase SQL editor and run every file in `supabase/migrations` in filename order, from `001_initial_schema.sql` through `007_opt_in_leaderboard.sql`.
 3. In Supabase project settings, copy the project URL and publishable/anon key.
 4. Add these variables to the chosen host's production environment:
 

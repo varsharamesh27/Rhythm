@@ -1,5 +1,7 @@
 node_modules
 .next
+.next-dev
+.next-e2e
 out
 dist
 .open-next
@@ -15,5 +17,6 @@ coverage
 .tools
 .next-dev.*.log
 .next-dev.log
+.rhythm-*.log
 .demo-data.json
 .playwright-demo-data.json

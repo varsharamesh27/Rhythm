@@ -12,9 +12,12 @@ export async function saveSettingsAction(formData: FormData): Promise<void> {
   const parsed = settingsSchema.safeParse({
     firstName: formData.get("firstName"),
     lastName: formData.get("lastName"),
-    timezone: formData.get("timezone")
+    timezone: formData.get("timezone"),
+    leaderboardOptIn: formData.get("leaderboardOptIn") === "on",
+    leaderboardName: formData.get("leaderboardName")
   });
   if (!parsed.success) throw new Error(parsed.error.issues[0]?.message ?? "Settings are invalid");
   await upsertProfile({ userId, ...parsed.data });
   revalidatePath("/settings");
+  revalidatePath("/leaderboard");
 }
