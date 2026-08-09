@@ -49,7 +49,10 @@ function getDemoLeaderboard(): LeaderboardEntry[] {
   const checkinDays = weeklyCheckins.length;
   const routinePoints = habitPoints("routine", 10) + schedulePoints + Math.round(20 * checkinDays / 7);
   const recoveryPoints = habitPoints("recovery", 5) + Math.round(15 * weeklyCheckins.reduce((sum, item) => sum + item.sleep_quality + item.energy, 0) / 70);
-  const movementPoints = habitPoints("movement", 5) + Math.round(10 * weeklyCheckins.reduce((sum, item) => sum + Number(item.workout_completed) + Number(item.yoga_completed) + Number(item.walking_completed), 0) / 21);
+  const movementPoints = habitPoints("movement", 5) + Math.round(weeklyCheckins.reduce(
+    (sum, item) => sum + 7 * Number(item.workout_completed) + 2 * Number(item.yoga_completed) + Number(item.walking_completed),
+    0
+  ) / 7);
   const nutritionPoints = habitPoints("nutrition", 5)
     + Math.round(7 * weeklyCheckins.reduce((sum, item) => sum + item.nutrition_adherence, 0) / 35)
     + Math.round(3 * weeklyCheckins.filter((item) => item.water_intake >= 8).length / 7);

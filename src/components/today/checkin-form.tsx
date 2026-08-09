@@ -62,7 +62,7 @@ export function CheckinForm({ today, existing }: { today: string; existing: Dail
           <fieldset className="grid gap-3 rounded-md border border-border p-4">
             <legend className="px-1 text-sm font-semibold text-foreground">Completed today</legend>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-              <Check name="workoutCompleted" label="Workout" checked={existing?.workout_completed ?? false} />
+              <Check name="workoutCompleted" label="Gym / workout" checked={existing?.workout_completed ?? false} />
               <Check name="yogaCompleted" label="Yoga" checked={existing?.yoga_completed ?? false} />
               <Check name="meditationCompleted" label="Meditation" checked={existing?.meditation_completed ?? false} />
               <Check name="walkingCompleted" label="Walking" checked={existing?.walking_completed ?? false} />
