@@ -8,17 +8,24 @@ const day = (gym: boolean, walk: boolean, yoga = false) => ({
 });
 
 describe("weeklyMovementActivityPoints", () => {
-  it("awards full coverage for three gym days and walks on the other four days", () => {
+  it("awards full coverage for three gym days, three walks, and one rest day", () => {
     expect(weeklyMovementActivityPoints([
       day(true, false, true), day(true, false, true), day(true, false, true),
-      day(false, true, true), day(false, true, true), day(false, true, true), day(false, true, true)
+      day(false, true, true), day(false, true, true), day(false, true, true), day(false, false, true)
     ])).toBe(10);
   });
 
-  it("lets extra gym days replace required walk days", () => {
+  it("lets extra gym days replace walk days while preserving one rest day", () => {
     expect(weeklyMovementActivityPoints([
       day(true, false), day(true, false), day(true, false), day(true, false), day(true, false),
-      day(false, true), day(false, true)
+      day(false, true), day(false, false)
+    ])).toBe(8);
+  });
+
+  it("allows six gym days and one rest day without a walk", () => {
+    expect(weeklyMovementActivityPoints([
+      day(true, false), day(true, false), day(true, false), day(true, false),
+      day(true, false), day(true, false), day(false, false)
     ])).toBe(8);
   });
 

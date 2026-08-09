@@ -84,10 +84,10 @@ as $$
         7 * least(count(daily_checkins.id) filter (where daily_checkins.workout_completed)::numeric / 3, 1)
         + 2 * count(daily_checkins.id) filter (where daily_checkins.yoga_completed)::numeric / 7
         + case
-            when 7 - count(daily_checkins.id) filter (where daily_checkins.workout_completed) = 0 then 1
+            when 6 - count(daily_checkins.id) filter (where daily_checkins.workout_completed) <= 0 then 1
             else least(
               count(daily_checkins.id) filter (where daily_checkins.walking_completed and not daily_checkins.workout_completed)::numeric
-              / (7 - count(daily_checkins.id) filter (where daily_checkins.workout_completed)),
+              / (6 - count(daily_checkins.id) filter (where daily_checkins.workout_completed)),
               1
             )
           end

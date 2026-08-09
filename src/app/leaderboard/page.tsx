@@ -65,7 +65,7 @@ export default async function LeaderboardPage() {
         {!setupRequired ? <section className="grid gap-3 sm:grid-cols-5" aria-label="Weekly point weights">
           <PointWeight label="Routine" points={40} detail="Check-ins, schedule, habits" />
           <PointWeight label="Recovery" points={20} detail="Sleep, energy, habits" />
-          <PointWeight label="Movement" points={15} detail="3+ gym days; walk every non-gym day" />
+          <PointWeight label="Movement" points={15} detail="6 active days: 3+ gym, walks on the rest" />
           <PointWeight label="Nutrition" points={15} detail="Nutrition, habits, hydration" />
           <PointWeight label="Career" points={10} detail="Habits and study" />
         </section> : null}
