@@ -36,9 +36,14 @@ export type LeaderboardEntry = {
   user_id: string;
   public_name: string;
   weekly_score: number;
-  habit_completions: number;
-  habit_target: number;
+  routine_points: number;
+  recovery_points: number;
+  movement_points: number;
+  nutrition_points: number;
+  career_points: number;
   checkin_days: number;
+  week_start: string;
+  week_end: string;
 };
 
 export type Habit = DbRecord & {
@@ -173,6 +178,10 @@ export type Database = {
     Views: { [_ in never]: never };
     Functions: {
       get_weekly_leaderboard: {
+        Args: Record<PropertyKey, never>;
+        Returns: Array<Pick<LeaderboardEntry, "rank" | "user_id" | "public_name" | "weekly_score" | "checkin_days"> & { habit_completions: number; habit_target: number }>;
+      };
+      get_weekly_points_leaderboard: {
         Args: Record<PropertyKey, never>;
         Returns: LeaderboardEntry[];
       };
