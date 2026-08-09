@@ -80,11 +80,18 @@ as $$
       count(daily_checkins.id)::integer as checkin_days,
       round(20 * count(daily_checkins.id)::numeric / 7)::integer as consistency,
       round(15 * coalesce(sum(daily_checkins.sleep_quality + daily_checkins.energy), 0)::numeric / 70)::integer as recovery,
-      round(coalesce(sum(
-        7 * daily_checkins.workout_completed::integer
-        + 2 * daily_checkins.yoga_completed::integer
-        + daily_checkins.walking_completed::integer
-      ), 0)::numeric / 7)::integer as movement,
+      round(
+        7 * least(count(daily_checkins.id) filter (where daily_checkins.workout_completed)::numeric / 3, 1)
+        + 2 * count(daily_checkins.id) filter (where daily_checkins.yoga_completed)::numeric / 7
+        + case
+            when 7 - count(daily_checkins.id) filter (where daily_checkins.workout_completed) = 0 then 1
+            else least(
+              count(daily_checkins.id) filter (where daily_checkins.walking_completed and not daily_checkins.workout_completed)::numeric
+              / (7 - count(daily_checkins.id) filter (where daily_checkins.workout_completed)),
+              1
+            )
+          end
+      )::integer as movement,
       round(7 * coalesce(sum(daily_checkins.nutrition_adherence), 0)::numeric / 35)::integer as nutrition,
       round(3 * count(daily_checkins.id) filter (where daily_checkins.water_intake >= 8)::numeric / 7)::integer as hydration,
       round(5 * count(daily_checkins.id) filter (where daily_checkins.study_completed)::numeric / 7)::integer as study
