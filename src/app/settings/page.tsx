@@ -21,7 +21,8 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
           <h1 className="font-display text-4xl font-semibold">Your Rhythm</h1>
           <p className="mt-2 max-w-2xl text-muted-foreground">Set the identity and timezone used across your personal workspace.</p>
         </div>
-        <Card className="max-w-xl">
+        <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,36rem)_minmax(16rem,1fr)]">
+        <Card>
           <CardHeader><CardTitle>Workspace identity</CardTitle></CardHeader>
           <CardContent>
             <p className="mb-5 text-sm text-muted-foreground">Your first name personalizes the dashboard and navigation. Your email is never used as your name.</p>
@@ -47,6 +48,17 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
             </form>
           </CardContent>
         </Card>
+        <Card className="lg:sticky lg:top-6">
+          <CardHeader><CardTitle>What your community sees</CardTitle></CardHeader>
+          <CardContent className="grid gap-4">
+            <div className="flex items-center gap-3 rounded-md border border-border bg-muted/40 p-4">
+              <span className="grid size-11 place-items-center rounded-full bg-primary text-lg font-semibold text-primary-foreground">{(profile?.leaderboard_name ?? profile?.first_name ?? "Y").slice(0, 1).toUpperCase()}</span>
+              <div><p className="font-semibold">{profile?.leaderboard_name ?? profile?.first_name ?? "Your public name"}</p><p className="text-sm text-muted-foreground">Weekly points and rank only</p></div>
+            </div>
+            <p className="text-sm leading-6 text-muted-foreground">{profile?.leaderboard_opt_in ? "You are currently visible on the weekly leaderboard." : "You are currently private. Turn on the leaderboard option and save to join."}</p>
+          </CardContent>
+        </Card>
+        </div>
         {profile?.workspace_role === "owner" ? <p className="text-sm font-medium text-accent">Owner workspace active</p> : null}
       </div>
     </AppShell>

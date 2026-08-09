@@ -28,6 +28,7 @@ export function MetricCard({
   icon?: ComponentType<{ size?: number; className?: string }>;
 }) {
   const toneClass = toneClasses[tone];
+  const percentage = value.endsWith("%") ? Number.parseInt(value, 10) : null;
 
   return (
     <Card className="relative overflow-hidden">
@@ -39,6 +40,11 @@ export function MetricCard({
       </CardHeader>
       <CardContent>
         <div className="font-display text-3xl font-semibold tabular-nums text-foreground">{value}</div>
+        {percentage !== null && Number.isFinite(percentage) ? (
+          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted" aria-hidden="true">
+            <div className={cn("h-full rounded-full bg-current transition-[width] duration-700 motion-reduce:transition-none", toneClass)} style={{ width: `${Math.min(100, Math.max(0, percentage))}%` }} />
+          </div>
+        ) : null}
         <p className="mt-2 text-sm leading-6 text-muted-foreground">{helper}</p>
       </CardContent>
     </Card>

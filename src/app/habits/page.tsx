@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
+import { ProgressMeter } from "@/components/ui/progress-meter";
 import { addDaysIso, todayIso } from "@/lib/dates";
 import { getCurrentUserId } from "@/lib/db/auth";
 import { listHabitLogsForRange, listHabits } from "@/lib/db/habits";
@@ -40,15 +41,23 @@ export default async function HabitsPage() {
           <Card>
             <CardHeader><CardTitle>Today&apos;s habit list</CardTitle></CardHeader>
             <CardContent className="grid gap-3">
-              <p className="border-l-2 border-accent bg-muted p-3 text-sm font-medium text-foreground">Seven-day target progress: {weeklyCompletion}%</p>
+              <ProgressMeter className="rounded-md border border-border bg-muted/40 p-4" label="Seven-day target progress" value={weeklyCompletion} />
               {habits.length === 0 ? <p className="text-sm text-muted-foreground">Add your first habit to begin tracking.</p> : null}
               {habits.map((habit) => {
                 const done = completedToday.has(habit.id);
+                const completedThisWeek = logs.filter((log) => log.habit_id === habit.id && log.completed).length;
+                const habitProgress = Math.min(100, (completedThisWeek / habit.target_per_week) * 100);
                 return (
                   <article key={habit.id} className="grid gap-3 rounded-md border border-border p-4 sm:grid-cols-[1fr_auto] sm:items-center">
                     <div>
                       <h2 className="font-semibold text-foreground">{habit.name}</h2>
                       <p className="text-sm text-muted-foreground">{habit.category} - target {habit.target_per_week}x/week - {habit.is_active ? "active" : "paused"}</p>
+                      <div className="mt-3 flex items-center gap-1.5" aria-label={`${completedThisWeek} of ${habit.target_per_week} weekly completions`}>
+                        {Array.from({ length: habit.target_per_week }, (_, index) => (
+                          <span className={`h-2 flex-1 rounded-full transition-colors ${index < completedThisWeek ? "bg-accent" : "bg-muted"}`} key={index} />
+                        ))}
+                        <span className="ml-2 text-xs font-semibold tabular-nums text-muted-foreground">{Math.round(habitProgress)}%</span>
+                      </div>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {habit.is_active ? (
