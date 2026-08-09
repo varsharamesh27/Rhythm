@@ -2,6 +2,7 @@ import { unstable_noStore as noStore } from "next/cache";
 import { isDemoMode } from "@/lib/demo-mode";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { HabitCategory, ScheduleEntry, ScheduleTemplate } from "@/types/database";
+import { applicableScheduleTemplatesForDate } from "@/lib/metrics/schedule";
 import {
   addDemoRoutineEntries,
   createDemoScheduleEntry,
@@ -173,10 +174,7 @@ export async function updateScheduleActual(input: {
 
 export async function addIdealScheduleToDay(userId: string, date: string): Promise<void> {
   const templates = await listScheduleTemplates(userId);
-  const weekday = new Date(`${date}T00:00:00Z`).getUTCDay();
-  const applicable = templates.filter(
-    (template) => template.weekday === null || template.weekday === weekday
-  );
+  const applicable = applicableScheduleTemplatesForDate(templates, date);
   const blocks = applicable.map((template) => ({
     title: template.name,
     plannedStart: template.start_time.slice(0, 5),
