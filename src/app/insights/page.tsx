@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { ProgressMeter } from "@/components/ui/progress-meter";
 import { addDaysIso, todayIso, weekStartIso } from "@/lib/dates";
 import { getCurrentUserId } from "@/lib/db/auth";
 import { listRecentCheckins } from "@/lib/db/checkins";
@@ -53,6 +54,15 @@ export default async function InsightsPage() {
           <MetricCard title="Career sessions" value={`${metrics.studySessionCount}`} helper="Study sessions completed recently." />
           <MetricCard title="Schedule adherence" value={`${scheduleAdherence}%`} helper="Completed planned blocks in the recent window." />
         </section>
+        <Card>
+          <CardHeader><CardTitle>This week at a glance</CardTitle></CardHeader>
+          <CardContent className="grid gap-4 sm:grid-cols-2">
+            <ProgressMeter label="Routine consistency" value={metrics.routineConsistency} />
+            <ProgressMeter label="Schedule adherence" value={scheduleAdherence} />
+            <ProgressMeter label="Hydration consistency" value={metrics.hydrationConsistency} />
+            <ProgressMeter label="Gym sessions toward 6-day maximum" value={(metrics.weeklyWorkoutCount / 6) * 100} />
+          </CardContent>
+        </Card>
         <section className="grid gap-4 lg:grid-cols-[1fr_360px]">
           <Card>
             <CardHeader><CardTitle>Weekly review</CardTitle></CardHeader>
@@ -94,7 +104,7 @@ export default async function InsightsPage() {
           <CardHeader><CardTitle>Past reviews</CardTitle></CardHeader>
           <CardContent className="grid gap-3">
             {reviews.length === 0 ? <p className="text-sm text-muted-foreground">Weekly reviews you save will appear here.</p> : null}
-            {reviews.map((review) => <article key={review.id} className="rounded-md border border-border p-4"><h2 className="font-display font-semibold">Week of {review.week_start}</h2><p className="mt-2 text-sm text-muted-foreground">{review.next_week_focus ?? review.routine_summary ?? "Review saved."}</p></article>)}
+            {reviews.map((review) => <details key={review.id} className="group rounded-md border border-border p-4 open:bg-muted/30"><summary className="cursor-pointer font-display font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">Week of {review.week_start}</summary><div className="mt-3 grid gap-2 text-sm text-muted-foreground"><p>{review.next_week_focus ?? review.routine_summary ?? "Review saved."}</p>{review.recovery_summary ? <p><strong className="text-foreground">Recovery:</strong> {review.recovery_summary}</p> : null}{review.movement_summary ? <p><strong className="text-foreground">Movement:</strong> {review.movement_summary}</p> : null}{review.nutrition_summary ? <p><strong className="text-foreground">Nutrition:</strong> {review.nutrition_summary}</p> : null}{review.career_summary ? <p><strong className="text-foreground">Career:</strong> {review.career_summary}</p> : null}</div></details>)}
           </CardContent>
         </Card>
       </div>

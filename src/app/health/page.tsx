@@ -31,7 +31,10 @@ export default async function HealthPage() {
         </section>
         <DashboardCharts metrics={metrics} />
         <Card>
-          <CardHeader><CardTitle>Recent body signals</CardTitle></CardHeader>
+          <details open>
+          <summary className="cursor-pointer list-none rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary [&::-webkit-details-marker]:hidden">
+            <CardHeader className="flex flex-row items-center justify-between"><CardTitle>Recent body signals</CardTitle><span className="text-sm font-medium text-muted-foreground">Click to expand or collapse</span></CardHeader>
+          </summary>
           <CardContent className="overflow-x-auto">
             {checkins.length === 0 ? <p className="text-sm text-muted-foreground">No health check-ins yet.</p> : (
               <table className="w-full min-w-[680px] text-left text-sm">
@@ -40,6 +43,7 @@ export default async function HealthPage() {
               </table>
             )}
           </CardContent>
+          </details>
         </Card>
       </div>
     </AppShell>
