@@ -2,6 +2,7 @@ import { unstable_noStore as noStore } from "next/cache";
 import { addDaysIso, mondayWeekStartIso, todayIso } from "@/lib/dates";
 import { isDemoMode } from "@/lib/demo-mode";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { weeklyMovementActivityPoints } from "@/lib/metrics/leaderboard";
 import type { LeaderboardEntry } from "@/types/database";
 import { readDemoState } from "./demo-store";
 
@@ -49,10 +50,7 @@ function getDemoLeaderboard(): LeaderboardEntry[] {
   const checkinDays = weeklyCheckins.length;
   const routinePoints = habitPoints("routine", 10) + schedulePoints + Math.round(20 * checkinDays / 7);
   const recoveryPoints = habitPoints("recovery", 5) + Math.round(15 * weeklyCheckins.reduce((sum, item) => sum + item.sleep_quality + item.energy, 0) / 70);
-  const movementPoints = habitPoints("movement", 5) + Math.round(weeklyCheckins.reduce(
-    (sum, item) => sum + 7 * Number(item.workout_completed) + 2 * Number(item.yoga_completed) + Number(item.walking_completed),
-    0
-  ) / 7);
+  const movementPoints = habitPoints("movement", 5) + weeklyMovementActivityPoints(weeklyCheckins);
   const nutritionPoints = habitPoints("nutrition", 5)
     + Math.round(7 * weeklyCheckins.reduce((sum, item) => sum + item.nutrition_adherence, 0) / 35)
     + Math.round(3 * weeklyCheckins.filter((item) => item.water_intake >= 8).length / 7);
