@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { AlertTriangle, Award, CalendarCheck2, Crown, LockKeyhole, Medal, Target, Trophy, Users } from "lucide-react";
+import { AlertTriangle, ChevronDown, Crown, Flame, LockKeyhole, Medal, Trophy, Users } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCurrentUserId } from "@/lib/db/auth";
@@ -54,13 +54,7 @@ export default async function LeaderboardPage() {
           </Card>
         ) : null}
 
-        {currentEntry ? (
-          <section className="grid gap-4 sm:grid-cols-3" aria-label="Your leaderboard progress">
-            <Stat label="Your rank" value={`#${currentEntry.rank}`} icon={Award} />
-            <Stat label="Weekly points" value={`${currentEntry.weekly_score}/100`} icon={Target} />
-            <Stat label="Check-in days" value={`${currentEntry.checkin_days}/7`} icon={CalendarCheck2} />
-          </section>
-        ) : null}
+        {currentEntry ? <CurrentProgress entry={currentEntry} /> : null}
 
         {!setupRequired ? <section className="grid gap-3 sm:grid-cols-5" aria-label="Weekly point weights">
           <PointWeight label="Routine" points={40} detail="Check-ins, schedule, habits" />
@@ -69,6 +63,8 @@ export default async function LeaderboardPage() {
           <PointWeight label="Nutrition" points={15} detail="Nutrition, habits, hydration" />
           <PointWeight label="Career" points={10} detail="Habits and study" />
         </section> : null}
+
+        {!setupRequired && entries.length > 0 ? <Podium entries={entries.slice(0, 3)} userId={userId} /> : null}
 
         {!setupRequired ? <Card>
           <CardHeader>
@@ -82,23 +78,8 @@ export default async function LeaderboardPage() {
                 <div><p className="font-semibold">No participants yet</p><p className="mt-1 text-sm text-muted-foreground">Be the first to join this week&apos;s board.</p></div>
               </div>
             ) : (
-              <ol className="divide-y divide-border">
-                {entries.map((entry) => {
-                  const isCurrentUser = entry.user_id === userId;
-                  return (
-                    <li className={`grid grid-cols-[3rem_1fr_auto] items-center gap-3 py-4 ${isCurrentUser ? "text-primary" : ""}`} key={entry.user_id}>
-                      <span className="grid size-9 place-items-center rounded-full bg-muted font-display font-bold" aria-label={`Rank ${entry.rank}`}>
-                        {entry.rank === 1 ? <Crown size={18} /> : entry.rank <= 3 ? <Medal size={18} /> : entry.rank}
-                      </span>
-                      <div>
-                        <p className="font-semibold text-foreground">{entry.public_name}{isCurrentUser ? " (you)" : ""}</p>
-                        <p className="mt-1 text-xs text-muted-foreground">Routine {entry.routine_points}/40 · Recovery {entry.recovery_points}/20 · Movement {entry.movement_points}/15 · Nutrition {entry.nutrition_points}/15 · Career {entry.career_points}/10</p>
-                        <p className="mt-1 text-xs text-muted-foreground">{entry.checkin_days}/7 check-in days</p>
-                      </div>
-                      <span className="font-display text-2xl font-semibold tabular-nums">{entry.weekly_score} pts</span>
-                    </li>
-                  );
-                })}
+              <ol className="grid gap-3">
+                {entries.map((entry) => <LeaderboardRow entry={entry} isCurrentUser={entry.user_id === userId} key={entry.user_id} />)}
               </ol>
             )}
           </CardContent>
@@ -108,8 +89,49 @@ export default async function LeaderboardPage() {
   );
 }
 
-function Stat({ label, value, icon: Icon }: { label: string; value: string; icon: typeof Award }) {
-  return <Card><CardContent className="flex items-center gap-4 pt-5"><span className="grid size-11 place-items-center rounded-full bg-muted text-primary"><Icon size={20} /></span><div><p className="text-sm text-muted-foreground">{label}</p><p className="font-display text-2xl font-semibold">{value}</p></div></CardContent></Card>;
+const categories = [
+  { key: "routine_points", label: "Routine", maximum: 40, color: "hsl(var(--routine))" },
+  { key: "recovery_points", label: "Recovery", maximum: 20, color: "hsl(var(--recovery))" },
+  { key: "movement_points", label: "Movement", maximum: 15, color: "hsl(var(--movement))" },
+  { key: "nutrition_points", label: "Nutrition", maximum: 15, color: "hsl(var(--nutrition))" },
+  { key: "career_points", label: "Career", maximum: 10, color: "hsl(var(--career))" }
+] as const;
+
+function CurrentProgress({ entry }: { entry: LeaderboardEntry }) {
+  return (
+    <section className="grid gap-4 lg:grid-cols-[18rem_1fr]" aria-label="Your leaderboard progress">
+      <Card className="overflow-hidden bg-gradient-to-br from-primary/10 via-card to-card">
+        <CardContent className="grid place-items-center gap-4 pt-6 text-center">
+          <ScoreRing score={entry.weekly_score} />
+          <div><p className="flex items-center justify-center gap-2 font-semibold"><Flame size={17} className="text-primary" />Your weekly momentum</p><p className="mt-1 text-sm text-muted-foreground">Rank #{entry.rank} · {entry.checkin_days}/7 check-in days</p></div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader><CardTitle className="flex items-center justify-between gap-4"><span>Your point mix</span><span className="text-sm font-medium text-muted-foreground">Click a participant below for details</span></CardTitle></CardHeader>
+        <CardContent className="grid gap-4">
+          {categories.map((category) => <CategoryBar category={category} entry={entry} key={category.key} />)}
+        </CardContent>
+      </Card>
+    </section>
+  );
+}
+
+function ScoreRing({ score }: { score: number }) {
+  const degrees = Math.min(100, Math.max(0, score)) * 3.6;
+  return <div className="grid size-36 place-items-center rounded-full p-3 shadow-inner" style={{ background: `conic-gradient(hsl(var(--primary)) ${degrees}deg, hsl(var(--muted)) 0deg)` }}><div className="grid size-full place-items-center rounded-full bg-card"><div><p className="font-display text-4xl font-semibold tabular-nums">{score}</p><p className="text-xs font-medium text-muted-foreground">of 100 points</p></div></div></div>;
+}
+
+function CategoryBar({ category, entry }: { category: typeof categories[number]; entry: LeaderboardEntry }) {
+  const value = entry[category.key];
+  return <div><div className="mb-1.5 flex items-center justify-between gap-3 text-sm"><span className="font-medium">{category.label}</span><span className="tabular-nums text-muted-foreground">{value}/{category.maximum}</span></div><div className="h-2.5 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full transition-[width] duration-500" style={{ backgroundColor: category.color, width: `${Math.min(100, value / category.maximum * 100)}%` }} /></div></div>;
+}
+
+function Podium({ entries, userId }: { entries: LeaderboardEntry[]; userId: string }) {
+  return <section aria-labelledby="podium-title"><div className="mb-4 flex items-center gap-2"><Crown size={19} className="text-[hsl(var(--nutrition))]" /><h2 className="font-display text-xl font-semibold" id="podium-title">This week&apos;s leaders</h2></div><div className="grid gap-3 sm:grid-cols-3">{entries.map((entry) => <Card className={entry.rank === 1 ? "border-primary/50 bg-primary/5 sm:-translate-y-2" : ""} key={entry.user_id}><CardContent className="grid place-items-center gap-2 pt-5 text-center"><span className="grid size-11 place-items-center rounded-full bg-muted text-primary">{entry.rank === 1 ? <Crown size={21} /> : <Medal size={21} />}</span><p className="font-semibold">{entry.public_name}{entry.user_id === userId ? " (you)" : ""}</p><p className="font-display text-3xl font-semibold tabular-nums">{entry.weekly_score}</p><p className="text-xs text-muted-foreground">points · rank #{entry.rank}</p></CardContent></Card>)}</div></section>;
+}
+
+function LeaderboardRow({ entry, isCurrentUser }: { entry: LeaderboardEntry; isCurrentUser: boolean }) {
+  return <li><details className={`group rounded-lg border transition-colors open:bg-muted/20 ${isCurrentUser ? "border-primary/50 bg-primary/5" : "border-border hover:border-primary/30"}`}><summary className="grid cursor-pointer list-none grid-cols-[3rem_1fr_auto_auto] items-center gap-3 p-4"><span className="grid size-9 place-items-center rounded-full bg-muted font-display font-bold" aria-label={`Rank ${entry.rank}`}>{entry.rank === 1 ? <Crown size={18} /> : entry.rank <= 3 ? <Medal size={18} /> : entry.rank}</span><div><p className="font-semibold text-foreground">{entry.public_name}{isCurrentUser ? " (you)" : ""}</p><p className="mt-1 text-xs text-muted-foreground">{entry.checkin_days}/7 check-in days</p></div><span className="font-display text-2xl font-semibold tabular-nums">{entry.weekly_score}<span className="ml-1 text-xs font-sans text-muted-foreground">pts</span></span><ChevronDown className="text-muted-foreground transition-transform group-open:rotate-180" size={18} /></summary><div className="grid gap-3 border-t border-border px-4 py-4 sm:grid-cols-5">{categories.map((category) => <CategoryBar category={category} entry={entry} key={category.key} />)}</div></details></li>;
 }
 
 function PointWeight({ label, points, detail }: { label: string; points: number; detail: string }) {
