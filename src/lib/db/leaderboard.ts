@@ -17,8 +17,8 @@ export async function listWeeklyLeaderboard(): Promise<LeaderboardEntry[]> {
   if (isDemoMode()) return getDemoLeaderboard();
 
   const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase.rpc("get_weekly_leaderboard");
-  if (error?.code === "PGRST202" || error?.message.includes("get_weekly_leaderboard")) {
+  const { data, error } = await supabase.rpc("get_weekly_points_leaderboard");
+  if (error?.code === "PGRST202" || error?.message.includes("get_weekly_points_leaderboard")) {
     throw new LeaderboardSetupRequiredError();
   }
   if (error) throw new Error(error.message);
@@ -33,25 +33,41 @@ function getDemoLeaderboard(): LeaderboardEntry[] {
   const weekStart = mondayWeekStartIso(todayIso());
   const weekEnd = addDaysIso(weekStart, 6);
   const activeHabits = state.habits.filter((habit) => habit.is_active);
-  const habitTarget = activeHabits.reduce((total, habit) => total + habit.target_per_week, 0);
-  const activeIds = new Set(activeHabits.map((habit) => habit.id));
-  const habitCompletions = state.habitLogs.filter(
-    (log) => log.completed && activeIds.has(log.habit_id) && log.log_date >= weekStart && log.log_date <= weekEnd
-  ).length;
-  const checkinDays = new Set(
-    state.checkins.filter((checkin) => checkin.checkin_date >= weekStart && checkin.checkin_date <= weekEnd).map((checkin) => checkin.checkin_date)
-  ).size;
-  const habitScore = habitTarget > 0 ? Math.min(habitCompletions / habitTarget, 1) : null;
-  const checkinScore = Math.min(checkinDays / 7, 1);
-  const weeklyScore = Math.round(habitScore === null ? checkinScore * 100 : habitScore * 70 + checkinScore * 30);
+  const weeklyCheckins = state.checkins.filter((checkin) => checkin.checkin_date >= weekStart && checkin.checkin_date <= weekEnd);
+  const habitPoints = (category: "routine" | "recovery" | "movement" | "nutrition" | "career", maximum: number) => {
+    const habits = activeHabits.filter((habit) => habit.category === category);
+    const target = habits.reduce((total, habit) => total + habit.target_per_week, 0);
+    if (target === 0) return 0;
+    const completed = habits.reduce((total, habit) => total + Math.min(
+      state.habitLogs.filter((log) => log.habit_id === habit.id && log.completed && log.log_date >= weekStart && log.log_date <= weekEnd).length,
+      habit.target_per_week
+    ), 0);
+    return Math.round(maximum * Math.min(completed / target, 1));
+  };
+  const weeklySchedule = state.scheduleEntries.filter((entry) => entry.entry_date >= weekStart && entry.entry_date <= weekEnd);
+  const schedulePoints = weeklySchedule.length === 0 ? 0 : Math.round(10 * weeklySchedule.filter((entry) => entry.completed).length / weeklySchedule.length);
+  const checkinDays = weeklyCheckins.length;
+  const routinePoints = habitPoints("routine", 10) + schedulePoints + Math.round(20 * checkinDays / 7);
+  const recoveryPoints = habitPoints("recovery", 5) + Math.round(15 * weeklyCheckins.reduce((sum, item) => sum + item.sleep_quality + item.energy, 0) / 70);
+  const movementPoints = habitPoints("movement", 5) + Math.round(10 * weeklyCheckins.reduce((sum, item) => sum + Number(item.workout_completed) + Number(item.yoga_completed) + Number(item.walking_completed), 0) / 21);
+  const nutritionPoints = habitPoints("nutrition", 5)
+    + Math.round(7 * weeklyCheckins.reduce((sum, item) => sum + item.nutrition_adherence, 0) / 35)
+    + Math.round(3 * weeklyCheckins.filter((item) => item.water_intake >= 8).length / 7);
+  const careerPoints = habitPoints("career", 5) + Math.round(5 * weeklyCheckins.filter((item) => item.study_completed).length / 7);
+  const weeklyScore = routinePoints + recoveryPoints + movementPoints + nutritionPoints + careerPoints;
 
   return [{
     rank: 1,
     user_id: profile.id,
     public_name: profile.leaderboard_name?.trim() || "Rhythm member",
     weekly_score: weeklyScore,
-    habit_completions: habitCompletions,
-    habit_target: habitTarget,
-    checkin_days: checkinDays
+    routine_points: routinePoints,
+    recovery_points: recoveryPoints,
+    movement_points: movementPoints,
+    nutrition_points: nutritionPoints,
+    career_points: careerPoints,
+    checkin_days: checkinDays,
+    week_start: weekStart,
+    week_end: weekEnd
   }];
 }
